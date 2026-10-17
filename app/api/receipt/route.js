@@ -1,4 +1,4 @@
-import { isUnlocked } from '../auth/lock';
+import { createClient } from '@supabase/supabase-js';
 
 const MODEL = 'gemini-3.5-flash-lite';
 
@@ -20,8 +20,20 @@ const SCHEMA = {
 
 const fail = (message, status) => Response.json({ error: message }, { status });
 
+// 로그인한 사용자의 요청인지 Supabase에서 토큰으로 확인한다.
+async function isSignedIn(request) {
+  const token = request.headers.get('authorization')?.replace(/^Bearer /, '');
+  if (!token) return false;
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  );
+  const { data, error } = await supabase.auth.getUser(token);
+  return !error && Boolean(data.user);
+}
+
 export async function POST(request) {
-  if (!(await isUnlocked())) return fail('잠겨 있어요', 401);
+  if (!(await isSignedIn(request))) return fail('로그인이 필요해요', 401);
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return fail('GEMINI_API_KEY가 설정되지 않았어요', 500);

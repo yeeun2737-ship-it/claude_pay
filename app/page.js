@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { supabase } from './supabase';
 
 const CATEGORIES = [
   { name: '식비', emoji: '🍙', color: '#f59e0b' },
@@ -29,6 +30,16 @@ async function shrinkImage(file) {
   return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
 }
 
+function authMessage(error) {
+  const m = error.message ?? '';
+  if (m.includes('Invalid login credentials')) return '이메일 또는 비밀번호가 맞지 않아요';
+  if (m.includes('already registered')) return '이미 가입된 이메일이에요';
+  if (m.includes('at least')) return '비밀번호는 6자 이상이어야 해요';
+  if (m.includes('Email not confirmed')) return '메일 인증을 먼저 완료해 주세요';
+  if (m.includes('rate limit')) return '요청이 너무 많아요. 잠시 후 다시 시도해 주세요';
+  return m;
+}
+
 function formatDate(str) {
   const [y, m, d] = str.split('-').map(Number);
   return `${m}월 ${d}일 (${DAYS[new Date(y, m - 1, d).getDay()]})`;
@@ -39,9 +50,13 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('list');
-  const [unlocked, setUnlocked] = useState(null);
+  const [session, setSession] = useState(undefined);
+  const [authMode, setAuthMode] = useState('login');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [lockError, setLockError] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authInfo, setAuthInfo] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanNote, setScanNote] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -54,36 +69,48 @@ export default function Home() {
   });
 
   useEffect(() => {
-    fetch('/api/auth')
-      .then((res) => res.json())
-      .then((data) => setUnlocked(data.unlocked));
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
+    return () => data.subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!unlocked) return;
-    fetch('/api/expenses')
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        setExpenses(data);
-      })
-      .catch((err) => setError('불러오지 못했어요: ' + err.message));
-  }, [unlocked]);
+  const userId = session?.user.id;
 
-  async function unlock(e) {
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('expenses')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) setError('불러오지 못했어요: ' + error.message);
+        else setExpenses(data);
+      });
+  }, [userId]);
+
+  async function authenticate(e) {
     e.preventDefault();
-    const res = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    });
-    setPassword('');
-    if (res.ok) {
-      setLockError('');
-      setUnlocked(true);
-    } else {
-      setLockError('PIN이 달라요 🙅');
+    setAuthBusy(true);
+    setAuthError('');
+    setAuthInfo('');
+    const credentials = { email: email.trim(), password };
+    const { data, error } =
+      authMode === 'login'
+        ? await supabase.auth.signInWithPassword(credentials)
+        : await supabase.auth.signUp(credentials);
+    setAuthBusy(false);
+    if (error) {
+      setAuthError(authMessage(error));
+      return;
     }
+    if (authMode === 'signup' && data.user?.identities?.length === 0) {
+      setAuthError('이미 가입된 이메일이에요');
+      return;
+    }
+    if (authMode === 'signup' && !data.session) {
+      setAuthInfo('인증 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요 📬');
+    }
+    setPassword('');
   }
 
   async function scanReceipt(e) {
@@ -95,7 +122,7 @@ export default function Home() {
     try {
       const res = await fetch('/api/receipt', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ image: await shrinkImage(file), mimeType: 'image/jpeg' }),
       });
       const data = await res.json();
@@ -123,35 +150,59 @@ export default function Home() {
     }
   }
 
-  async function lock() {
-    await fetch('/api/auth', { method: 'DELETE' });
+  async function logout() {
+    await supabase.auth.signOut();
     setExpenses([]);
     setOpen(false);
-    setUnlocked(false);
+    setEditingId(null);
+    setTab('list');
   }
 
-  if (unlocked === null) return <main className="app" />;
+  if (session === undefined) return <main className="app" />;
 
-  if (!unlocked) {
+  if (!session) {
+    const login = authMode === 'login';
     return (
       <main className="app lock">
-        <form className="hero" onSubmit={unlock}>
+        <form className="hero" onSubmit={authenticate}>
           <p className="brand">티끌모아 티끌</p>
-          <p className="label">🔒 PIN 4자리를 입력해요</p>
+          <p className="label">{login ? '로그인하고 내 가계부를 열어요' : '이메일로 내 가계부를 만들어요'}</p>
           <input
-            className="pw"
-            type="password"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={4}
-            autoFocus
-            value={password}
-            onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
-            aria-label="PIN"
+            className="auth-in"
+            type="email"
+            autoComplete="email"
+            placeholder="이메일"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-label="이메일"
           />
-          {lockError && <p className="lock-error">{lockError}</p>}
-          <button type="submit" className="unlock">
-            열기
+          <input
+            className="auth-in"
+            type="password"
+            autoComplete={login ? 'current-password' : 'new-password'}
+            placeholder="비밀번호 (6자 이상)"
+            minLength={6}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            aria-label="비밀번호"
+          />
+          {authError && <p className="lock-error">{authError}</p>}
+          {authInfo && <p className="lock-error">{authInfo}</p>}
+          <button type="submit" className="unlock" disabled={authBusy}>
+            {authBusy ? '잠시만요...' : login ? '로그인' : '가입하기'}
+          </button>
+          <button
+            type="button"
+            className="switch"
+            onClick={() => {
+              setAuthMode(login ? 'signup' : 'login');
+              setAuthError('');
+              setAuthInfo('');
+            }}
+          >
+            {login ? '계정이 없어요 → 가입하기' : '이미 계정이 있어요 → 로그인'}
           </button>
         </form>
       </main>
@@ -234,14 +285,19 @@ export default function Home() {
     const amount = Number(form.amount);
     if (!amount || amount <= 0 || !form.place.trim()) return;
     const editing = editingId !== null;
-    const res = await fetch(editing ? `/api/expenses/${editingId}` : '/api/expenses', {
-      method: editing ? 'PATCH' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, amount }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setError('저장하지 못했어요: ' + data.error);
+    const row = {
+      amount,
+      place: form.place.trim(),
+      category: form.category,
+      date: form.date,
+      memo: form.memo.trim(),
+    };
+    const query = editing
+      ? supabase.from('expenses').update(row).eq('id', editingId)
+      : supabase.from('expenses').insert(row);
+    const { data, error } = await query.select().single();
+    if (error) {
+      setError('저장하지 못했어요: ' + error.message);
       return;
     }
     setError('');
@@ -258,10 +314,9 @@ export default function Home() {
 
   async function remove() {
     if (!window.confirm('이 지출을 삭제할까요?')) return;
-    const res = await fetch(`/api/expenses/${editingId}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (!res.ok) {
-      setError('삭제하지 못했어요: ' + data.error);
+    const { error } = await supabase.from('expenses').delete().eq('id', editingId);
+    if (error) {
+      setError('삭제하지 못했어요: ' + error.message);
       return;
     }
     setError('');
@@ -274,8 +329,8 @@ export default function Home() {
   return (
     <main className="app">
       <header className="hero">
-        <button className="lock-btn" onClick={lock} aria-label="잠그기">
-          🔒
+        <button className="lock-btn" onClick={logout}>
+          로그아웃
         </button>
         <p className="brand">티끌모아 티끌</p>
         <p className="label">{today.getMonth() + 1}월 지출 합계</p>
