@@ -172,6 +172,25 @@ export default function Home() {
     .sort((a, b) => b.sum - a.sum);
   const dailyAvg = Math.round(monthTotal / today.getDate());
 
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const dailyTotals = Array.from({ length: daysInMonth }, (_, i) =>
+    monthExpenses
+      .filter((e) => Number(e.date.slice(8, 10)) === i + 1)
+      .reduce((s, e) => s + e.amount, 0),
+  );
+  const maxDaily = Math.max(...dailyTotals);
+
+  // 도넛 차트: 카테고리별 조각을 둘레(원주) 위에 이어 붙인다
+  const R = 36;
+  const CIRC = 2 * Math.PI * R;
+  let acc = 0;
+  const arcs = byCategory.map((c) => {
+    const len = (c.sum / monthTotal) * CIRC;
+    const arc = { name: c.name, color: c.color, len, offset: acc };
+    acc += len;
+    return arc;
+  });
+
   const groups = Object.entries(
     expenses.reduce((acc, e) => {
       (acc[e.date] ??= []).push(e);
@@ -243,6 +262,72 @@ export default function Home() {
               <p>이번 달 통계가 아직 없어요!</p>
             </div>
           ) : (
+            <div className="chart-card">
+              <h3>🍩 카테고리별 비율</h3>
+              <svg viewBox="0 0 100 100" className="donut" role="img" aria-label="카테고리별 지출 비율 도넛 차트">
+                <g transform="rotate(-90 50 50)">
+                  {arcs.map((a) => (
+                    <circle
+                      key={a.name}
+                      cx="50"
+                      cy="50"
+                      r={R}
+                      fill="none"
+                      stroke={a.color}
+                      strokeWidth="18"
+                      strokeDasharray={`${a.len} ${CIRC - a.len}`}
+                      strokeDashoffset={-a.offset}
+                    />
+                  ))}
+                </g>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#2b2250" strokeWidth="1.6" />
+                <circle cx="50" cy="50" r="27" fill="none" stroke="#2b2250" strokeWidth="1.6" />
+                <text x="50" y="48" textAnchor="middle" fontSize="6" fill="#2b2250">
+                  총 지출
+                </text>
+                <text x="50" y="58" textAnchor="middle" fontSize="8.5" fontWeight="900" fill="#2b2250">
+                  {monthTotal.toLocaleString('ko-KR')}
+                </text>
+              </svg>
+            </div>
+          )}
+          {monthExpenses.length > 0 && (
+            <div className="chart-card">
+              <h3>📅 일별 지출</h3>
+              <svg viewBox="0 0 310 130" className="daily" role="img" aria-label="일별 지출 막대 그래프">
+                {dailyTotals.map((v, i) => {
+                  const w = 300 / daysInMonth;
+                  const h = maxDaily ? (v / maxDaily) * 90 : 0;
+                  return (
+                    <g key={i}>
+                      {v > 0 && (
+                        <rect
+                          x={5 + i * w + w * 0.15}
+                          y={105 - h}
+                          width={w * 0.7}
+                          height={h}
+                          rx="1.5"
+                          fill={v === maxDaily ? '#ffd23f' : '#ff8fb1'}
+                          stroke="#2b2250"
+                          strokeWidth="1.2"
+                        />
+                      )}
+                      {(i + 1 === 1 || (i + 1) % 5 === 0) && (
+                        <text x={5 + i * w + w / 2} y="121" textAnchor="middle" fontSize="8" fill="#2b2250">
+                          {i + 1}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
+                <line x1="5" y1="105" x2="305" y2="105" stroke="#2b2250" strokeWidth="1.5" />
+                <text x="5" y="10" fontSize="8" fontWeight="700" fill="#2b2250">
+                  최대 {maxDaily.toLocaleString('ko-KR')}원
+                </text>
+              </svg>
+            </div>
+          )}
+          {byCategory.length > 0 && (
             <ul className="bars">
               {byCategory.map((c) => (
                 <li key={c.name}>

@@ -113,7 +113,7 @@ body {
 }
 .tab.on { background: var(--yellow); box-shadow: 3px 3px 0 var(--ink); }
 
-.stats { margin-top: 18px; display: grid; gap: 16px; }
+.stats { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .numbers div {
   background: #fff;
@@ -126,6 +126,16 @@ body {
 }
 .numbers small { font-size: 12px; opacity: 0.7; }
 .numbers strong { font-size: 20px; font-weight: 900; }
+.chart-card {
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--ink);
+  padding: 14px;
+}
+.chart-card h3 { font-size: 15px; margin-bottom: 8px; }
+.donut { display: block; width: 70%; max-width: 240px; margin: 0 auto; }
+.daily { display: block; width: 100%; height: auto; }
 .bars {
   list-style: none;
   background: #fff;
@@ -142,7 +152,7 @@ body {
 .fill { height: 100%; border-right: 2px solid var(--ink); }
 
 .list[hidden] { display: none; }
-.list { margin-top: 24px; display: grid; gap: 18px; }
+.list { margin-top: 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
 .empty { text-align: center; padding: 40px 0; font-size: 18px; font-weight: 700; }
 .empty p:first-child { font-size: 48px; }
 .sub { font-size: 13px; font-weight: 400; opacity: 0.7; margin-top: 4px; }
