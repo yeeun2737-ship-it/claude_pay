@@ -286,5 +286,10 @@ body {
   color: var(--ink);
   cursor: pointer;
 }
+.actions.edit { grid-template-columns: 1fr 1fr 2fr; }
+.danger { background: #ff6b6b; }
+.day li.row { cursor: pointer; }
+.day li.row:active { background: var(--paper); }
+.hint { font-size: 12px; opacity: 0.7; text-align: center; }
 .ghost { background: #fff; }
 .primary { background: var(--pink); box-shadow: 3px 3px 0 var(--ink); }

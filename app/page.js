@@ -44,6 +44,7 @@ export default function Home() {
   const [lockError, setLockError] = useState('');
   const [scanning, setScanning] = useState(false);
   const [scanNote, setScanNote] = useState('');
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     amount: '',
     place: '',
@@ -200,12 +201,41 @@ export default function Home() {
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
+  const emptyForm = {
+    amount: '',
+    place: '',
+    category: CATEGORIES[0].name,
+    date: toDateStr(new Date()),
+    memo: '',
+  };
+
+  function openNew() {
+    // 고치던 내용이 새 입력 칸에 남지 않게 비운다
+    if (editingId !== null) setForm(emptyForm);
+    setEditingId(null);
+    setScanNote('');
+    setOpen(true);
+  }
+
+  function openEdit(e) {
+    setForm({
+      amount: String(e.amount),
+      place: e.place,
+      category: e.category,
+      date: e.date,
+      memo: e.memo ?? '',
+    });
+    setEditingId(e.id);
+    setOpen(true);
+  }
+
   async function submit(e) {
     e.preventDefault();
     const amount = Number(form.amount);
     if (!amount || amount <= 0 || !form.place.trim()) return;
-    const res = await fetch('/api/expenses', {
-      method: 'POST',
+    const editing = editingId !== null;
+    const res = await fetch(editing ? `/api/expenses/${editingId}` : '/api/expenses', {
+      method: editing ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, amount }),
     });
@@ -215,9 +245,29 @@ export default function Home() {
       return;
     }
     setError('');
-    setExpenses([data, ...expenses]);
-    setForm({ ...form, amount: '', place: '', memo: '' });
+    setExpenses(editing ? expenses.map((x) => (x.id === data.id ? data : x)) : [data, ...expenses]);
+    if (editing) {
+      setForm(emptyForm);
+      setEditingId(null);
+    } else {
+      setForm({ ...form, amount: '', place: '', memo: '' });
+    }
     setScanNote('');
+    setOpen(false);
+  }
+
+  async function remove() {
+    if (!window.confirm('이 지출을 삭제할까요?')) return;
+    const res = await fetch(`/api/expenses/${editingId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) {
+      setError('삭제하지 못했어요: ' + data.error);
+      return;
+    }
+    setError('');
+    setExpenses(expenses.filter((x) => x.id !== editingId));
+    setForm(emptyForm);
+    setEditingId(null);
     setOpen(false);
   }
 
@@ -360,6 +410,7 @@ export default function Home() {
             <p className="sub">아래 + 버튼으로 첫 지출을 적어봐요</p>
           </div>
         )}
+        {groups.length > 0 && <p className="hint">💡 항목을 누르면 고치거나 지울 수 있어요</p>}
         {groups.map(([date, items]) => (
           <div className="day" key={date}>
             <div className="day-head">
@@ -370,7 +421,7 @@ export default function Home() {
               {items.map((e) => {
                 const c = catOf(e.category);
                 return (
-                  <li key={e.id}>
+                  <li key={e.id} className="row" onClick={() => openEdit(e)}>
                     <span className="chip" style={{ background: c.color }}>
                       {c.emoji} {c.name}
                     </span>
@@ -387,20 +438,22 @@ export default function Home() {
         ))}
       </section>
 
-      <button className="fab" onClick={() => setOpen(true)} aria-label="지출 추가">
+      <button className="fab" onClick={openNew} aria-label="지출 추가">
         +
       </button>
 
       {open && (
         <div className="overlay" onClick={() => setOpen(false)}>
           <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-            <h2>💸 지출 적기</h2>
+            <h2>{editingId === null ? '💸 지출 적기' : '✏️ 지출 고치기'}</h2>
 
-            <label className="scan">
-              <input type="file" accept="image/*" hidden onChange={scanReceipt} disabled={scanning} />
-              <span className="scan-btn">{scanning ? '읽는 중... 🔍' : '📷 영수증으로 채우기'}</span>
-              {scanNote && <small className="scan-note">{scanNote}</small>}
-            </label>
+            {editingId === null && (
+              <label className="scan">
+                <input type="file" accept="image/*" hidden onChange={scanReceipt} disabled={scanning} />
+                <span className="scan-btn">{scanning ? '읽는 중... 🔍' : '📷 영수증으로 채우기'}</span>
+                {scanNote && <small className="scan-note">{scanNote}</small>}
+              </label>
+            )}
 
             <label>
               금액
@@ -453,12 +506,17 @@ export default function Home() {
               <input type="text" placeholder="(선택)" value={form.memo} onChange={set('memo')} />
             </label>
 
-            <div className="actions">
+            <div className={editingId === null ? 'actions' : 'actions edit'}>
               <button type="button" className="ghost" onClick={() => setOpen(false)}>
                 취소
               </button>
+              {editingId !== null && (
+                <button type="button" className="danger" onClick={remove}>
+                  삭제
+                </button>
+              )}
               <button type="submit" className="primary">
-                추가하기
+                {editingId === null ? '추가하기' : '저장하기'}
               </button>
             </div>
           </form>
