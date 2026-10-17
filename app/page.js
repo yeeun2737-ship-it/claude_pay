@@ -28,6 +28,10 @@ export default function Home() {
   const [expenses, setExpenses] = useState([]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
+  const [tab, setTab] = useState('list');
+  const [unlocked, setUnlocked] = useState(null);
+  const [password, setPassword] = useState('');
+  const [lockError, setLockError] = useState('');
   const [form, setForm] = useState({
     amount: '',
     place: '',
@@ -37,6 +41,13 @@ export default function Home() {
   });
 
   useEffect(() => {
+    fetch('/api/auth')
+      .then((res) => res.json())
+      .then((data) => setUnlocked(data.unlocked));
+  }, []);
+
+  useEffect(() => {
+    if (!unlocked) return;
     supabase
       .from('expenses')
       .select('*')
@@ -45,13 +56,70 @@ export default function Home() {
         if (error) setError('불러오지 못했어요: ' + error.message);
         else setExpenses(data);
       });
-  }, []);
+  }, [unlocked]);
+
+  async function unlock(e) {
+    e.preventDefault();
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    setPassword('');
+    if (res.ok) {
+      setLockError('');
+      setUnlocked(true);
+    } else {
+      setLockError('비밀번호가 달라요 🙅');
+    }
+  }
+
+  async function lock() {
+    await fetch('/api/auth', { method: 'DELETE' });
+    setExpenses([]);
+    setOpen(false);
+    setUnlocked(false);
+  }
+
+  if (unlocked === null) return <main className="app" />;
+
+  if (!unlocked) {
+    return (
+      <main className="app lock">
+        <form className="hero" onSubmit={unlock}>
+          <p className="brand">🐷 티끌모아 티끌</p>
+          <p className="label">🔒 비밀번호를 입력해요</p>
+          <input
+            className="pw"
+            type="password"
+            autoFocus
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            aria-label="비밀번호"
+          />
+          {lockError && <p className="lock-error">{lockError}</p>}
+          <button type="submit" className="unlock">
+            열기
+          </button>
+        </form>
+      </main>
+    );
+  }
 
   const today = new Date();
   const monthKey = `${today.getFullYear()}-${pad(today.getMonth() + 1)}`;
   const monthTotal = expenses
     .filter((e) => e.date.startsWith(monthKey))
     .reduce((sum, e) => sum + e.amount, 0);
+
+  const monthExpenses = expenses.filter((e) => e.date.startsWith(monthKey));
+  const byCategory = CATEGORIES.map((c) => {
+    const items = monthExpenses.filter((e) => e.category === c.name);
+    return { ...c, count: items.length, sum: items.reduce((s, e) => s + e.amount, 0) };
+  })
+    .filter((c) => c.count > 0)
+    .sort((a, b) => b.sum - a.sum);
+  const dailyAvg = Math.round(monthTotal / today.getDate());
 
   const groups = Object.entries(
     expenses.reduce((acc, e) => {
@@ -84,6 +152,9 @@ export default function Home() {
   return (
     <main className="app">
       <header className="hero">
+        <button className="lock-btn" onClick={lock} aria-label="잠그기">
+          🔒
+        </button>
         <p className="brand">🐷 티끌모아 티끌</p>
         <p className="label">{today.getMonth() + 1}월 지출 합계</p>
         <p className="total">{won(monthTotal)}</p>
@@ -92,7 +163,58 @@ export default function Home() {
 
       {error && <p className="error">{error}</p>}
 
-      <section className="list">
+      <nav className="tabs">
+        <button className={tab === 'list' ? 'tab on' : 'tab'} onClick={() => setTab('list')}>
+          📒 내역
+        </button>
+        <button className={tab === 'stats' ? 'tab on' : 'tab'} onClick={() => setTab('stats')}>
+          📊 통계
+        </button>
+      </nav>
+
+      {tab === 'stats' && (
+        <section className="stats">
+          <div className="numbers">
+            <div>
+              <small>지출 건수</small>
+              <strong>{monthExpenses.length}건</strong>
+            </div>
+            <div>
+              <small>하루 평균</small>
+              <strong>{won(dailyAvg)}</strong>
+            </div>
+          </div>
+          {byCategory.length === 0 ? (
+            <div className="empty">
+              <p>📊</p>
+              <p>이번 달 통계가 아직 없어요!</p>
+            </div>
+          ) : (
+            <ul className="bars">
+              {byCategory.map((c) => (
+                <li key={c.name}>
+                  <div className="bar-head">
+                    <span>
+                      {c.emoji} {c.name} <small>{c.count}건</small>
+                    </span>
+                    <span>
+                      {won(c.sum)} · {Math.round((c.sum / monthTotal) * 100)}%
+                    </span>
+                  </div>
+                  <div className="track">
+                    <div
+                      className="fill"
+                      style={{ width: `${(c.sum / monthTotal) * 100}%`, background: c.color }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      <section className="list" hidden={tab !== 'list'}>
         {groups.length === 0 && (
           <div className="empty">
             <p>🫥</p>
