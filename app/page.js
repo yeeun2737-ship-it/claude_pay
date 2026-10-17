@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 
 const CATEGORIES = [
-  { name: '식비', emoji: '🍙', color: '#ffd23f' },
-  { name: '카페', emoji: '☕', color: '#ff8fb1' },
-  { name: '교통', emoji: '🚌', color: '#7fd6ff' },
-  { name: '쇼핑', emoji: '🛍️', color: '#b9a3ff' },
-  { name: '구독', emoji: '📺', color: '#8fe3a3' },
-  { name: '기타', emoji: '✨', color: '#ffb36b' },
+  { name: '식비', emoji: '🍙', color: '#f59e0b' },
+  { name: '카페', emoji: '☕', color: '#ec4899' },
+  { name: '교통', emoji: '🚌', color: '#0ea5e9' },
+  { name: '쇼핑', emoji: '🛍️', color: '#8b5cf6' },
+  { name: '구독', emoji: '📺', color: '#10b981' },
+  { name: '기타', emoji: '✨', color: '#64748b' },
 ];
 
 const catOf = (name) => CATEGORIES.find((c) => c.name === name) ?? CATEGORIES[5];
@@ -136,7 +136,7 @@ export default function Home() {
     return (
       <main className="app lock">
         <form className="hero" onSubmit={unlock}>
-          <p className="brand">🐷 티끌모아 티끌</p>
+          <p className="brand">티끌모아 티끌</p>
           <p className="label">🔒 PIN 4자리를 입력해요</p>
           <input
             className="pw"
@@ -277,10 +277,9 @@ export default function Home() {
         <button className="lock-btn" onClick={lock} aria-label="잠그기">
           🔒
         </button>
-        <p className="brand">🐷 티끌모아 티끌</p>
+        <p className="brand">티끌모아 티끌</p>
         <p className="label">{today.getMonth() + 1}월 지출 합계</p>
         <p className="total">{won(monthTotal)}</p>
-        <span className="sticker">티끌도 모이면... 티끌! 🫠</span>
       </header>
 
       {error && <p className="error">{error}</p>}
@@ -330,12 +329,10 @@ export default function Home() {
                     />
                   ))}
                 </g>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#2b2250" strokeWidth="1.6" />
-                <circle cx="50" cy="50" r="27" fill="none" stroke="#2b2250" strokeWidth="1.6" />
-                <text x="50" y="48" textAnchor="middle" fontSize="6" fill="#2b2250">
+                <text x="50" y="48" textAnchor="middle" fontSize="6" fill="#6b7280">
                   총 지출
                 </text>
-                <text x="50" y="58" textAnchor="middle" fontSize="8.5" fontWeight="900" fill="#2b2250">
+                <text x="50" y="58" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#111827">
                   {monthTotal.toLocaleString('ko-KR')}
                 </text>
               </svg>
@@ -357,21 +354,19 @@ export default function Home() {
                           width={w * 0.7}
                           height={h}
                           rx="1.5"
-                          fill={v === maxDaily ? '#ffd23f' : '#ff8fb1'}
-                          stroke="#2b2250"
-                          strokeWidth="1.2"
+                          fill={v === maxDaily ? '#4f46e5' : '#c7d2fe'}
                         />
                       )}
                       {(i + 1 === 1 || (i + 1) % 5 === 0) && (
-                        <text x={5 + i * w + w / 2} y="121" textAnchor="middle" fontSize="8" fill="#2b2250">
+                        <text x={5 + i * w + w / 2} y="121" textAnchor="middle" fontSize="8" fill="#6b7280">
                           {i + 1}
                         </text>
                       )}
                     </g>
                   );
                 })}
-                <line x1="5" y1="105" x2="305" y2="105" stroke="#2b2250" strokeWidth="1.5" />
-                <text x="5" y="10" fontSize="8" fontWeight="700" fill="#2b2250">
+                <line x1="5" y1="105" x2="305" y2="105" stroke="#e5e7eb" strokeWidth="1.5" />
+                <text x="5" y="10" fontSize="8" fontWeight="600" fill="#6b7280">
                   최대 {maxDaily.toLocaleString('ko-KR')}원
                 </text>
               </svg>
@@ -422,7 +417,7 @@ export default function Home() {
                 const c = catOf(e.category);
                 return (
                   <li key={e.id} className="row" onClick={() => openEdit(e)}>
-                    <span className="chip" style={{ background: c.color }}>
+                    <span className="chip" style={{ '--c': c.color }}>
                       {c.emoji} {c.name}
                     </span>
                     <div className="info">

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 const SIZES = [180, 192, 512];
-const INK = '#2b2250';
+const INK = '#312e81';
 
 export async function GET(_request, { params }) {
   const size = Number((await params).size);
@@ -10,7 +10,7 @@ export async function GET(_request, { params }) {
   // 모든 치수는 아이콘 한 변(size) 대비 비율. 마스커블 아이콘이 잘려도 되도록 중앙 80% 안에 그린다.
   const u = (r) => Math.round(size * r);
   const border = Math.max(2, u(0.02));
-  const shadow = Math.max(2, u(0.025));
+  const softShadow = `0 ${u(0.02)}px ${u(0.05)}px rgba(30, 27, 75, 0.35)`;
   const abs = { position: 'absolute', display: 'flex' };
 
   const dots = [0.08, 0.2, 0.32, 0.44];
@@ -23,7 +23,7 @@ export async function GET(_request, { params }) {
 
   return new ImageResponse(
     (
-      <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', background: '#ff8fb1' }}>
+      <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
         {/* 가계부 노트 */}
         <div
           style={{
@@ -33,9 +33,8 @@ export async function GET(_request, { params }) {
             width: u(0.5),
             height: u(0.62),
             background: '#fff',
-            border: `${border}px solid ${INK}`,
             borderRadius: u(0.05),
-            boxShadow: `${shadow}px ${shadow}px 0 ${INK}`,
+            boxShadow: softShadow,
           }}
         >
           {dots.map((t) => (
@@ -51,8 +50,7 @@ export async function GET(_request, { params }) {
               top: u(0.07),
               width: u(0.34),
               height: u(0.07),
-              background: '#ffd23f',
-              border: `${Math.max(1, Math.round(border / 2))}px solid ${INK}`,
+              background: '#c7d2fe',
               borderRadius: u(0.02),
             }}
           />
@@ -75,9 +73,9 @@ export async function GET(_request, { params }) {
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '50%',
-            background: '#ffd23f',
-            border: `${border}px solid ${INK}`,
-            boxShadow: `${shadow}px ${shadow}px 0 ${INK}`,
+            background: '#fbbf24',
+            border: `${border}px solid #fff`,
+            boxShadow: softShadow,
           }}
         >
           <div style={{ display: 'flex', color: INK, fontSize: u(0.19), fontWeight: 900 }}>W</div>
