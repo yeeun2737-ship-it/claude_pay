@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from './supabase';
 
 const CATEGORIES = [
   { name: '식비', emoji: '🍙', color: '#ffd23f' },
@@ -26,6 +27,7 @@ function formatDate(str) {
 export default function Home() {
   const [expenses, setExpenses] = useState([]);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({
     amount: '',
     place: '',
@@ -33,6 +35,17 @@ export default function Home() {
     date: toDateStr(new Date()),
     memo: '',
   });
+
+  useEffect(() => {
+    supabase
+      .from('expenses')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) setError('불러오지 못했어요: ' + error.message);
+        else setExpenses(data);
+      });
+  }, []);
 
   const today = new Date();
   const monthKey = `${today.getFullYear()}-${pad(today.getMonth() + 1)}`;
@@ -49,14 +62,21 @@ export default function Home() {
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
     const amount = Number(form.amount);
     if (!amount || amount <= 0 || !form.place.trim()) return;
-    setExpenses([
-      { id: Date.now(), ...form, amount, place: form.place.trim(), memo: form.memo.trim() },
-      ...expenses,
-    ]);
+    const { data, error } = await supabase
+      .from('expenses')
+      .insert({ ...form, amount, place: form.place.trim(), memo: form.memo.trim() })
+      .select()
+      .single();
+    if (error) {
+      setError('저장하지 못했어요: ' + error.message);
+      return;
+    }
+    setError('');
+    setExpenses([data, ...expenses]);
     setForm({ ...form, amount: '', place: '', memo: '' });
     setOpen(false);
   }
@@ -69,6 +89,8 @@ export default function Home() {
         <p className="total">{won(monthTotal)}</p>
         <span className="sticker">티끌도 모이면... 티끌! 🫠</span>
       </header>
+
+      {error && <p className="error">{error}</p>}
 
       <section className="list">
         {groups.length === 0 && (
