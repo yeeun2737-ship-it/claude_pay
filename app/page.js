@@ -70,7 +70,7 @@ export default function Home() {
       setLockError('');
       setUnlocked(true);
     } else {
-      setLockError('비밀번호가 달라요 🙅');
+      setLockError('PIN이 달라요 🙅');
     }
   }
 
@@ -88,14 +88,17 @@ export default function Home() {
       <main className="app lock">
         <form className="hero" onSubmit={unlock}>
           <p className="brand">🐷 티끌모아 티끌</p>
-          <p className="label">🔒 비밀번호를 입력해요</p>
+          <p className="label">🔒 PIN 4자리를 입력해요</p>
           <input
             className="pw"
             type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={4}
             autoFocus
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            aria-label="비밀번호"
+            onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
+            aria-label="PIN"
           />
           {lockError && <p className="lock-error">{lockError}</p>}
           <button type="submit" className="unlock">
