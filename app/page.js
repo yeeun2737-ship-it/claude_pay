@@ -19,6 +19,17 @@ const toDateStr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.ge
 const won = (n) => n.toLocaleString('ko-KR') + '원';
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
+// 영수증 사진을 긴 변 1600px 이하 JPEG로 줄여 base64(헤더 제외)로 반환
+async function shrinkImage(file) {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+}
+
 function formatDate(str) {
   const [y, m, d] = str.split('-').map(Number);
   return `${m}월 ${d}일 (${DAYS[new Date(y, m - 1, d).getDay()]})`;
@@ -32,6 +43,8 @@ export default function Home() {
   const [unlocked, setUnlocked] = useState(null);
   const [password, setPassword] = useState('');
   const [lockError, setLockError] = useState('');
+  const [scanning, setScanning] = useState(false);
+  const [scanNote, setScanNote] = useState('');
   const [form, setForm] = useState({
     amount: '',
     place: '',
@@ -71,6 +84,43 @@ export default function Home() {
       setUnlocked(true);
     } else {
       setLockError('PIN이 달라요 🙅');
+    }
+  }
+
+  async function scanReceipt(e) {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    setScanning(true);
+    setScanNote('');
+    try {
+      const res = await fetch('/api/receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: await shrinkImage(file), mimeType: 'image/jpeg' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setForm((f) => ({
+        ...f,
+        amount: data.amount ? String(data.amount) : '',
+        date: data.date ?? '',
+        place: data.place ?? '',
+      }));
+      const missing = [
+        !data.amount && '금액',
+        !data.date && '날짜',
+        !data.place && '사용처',
+      ].filter(Boolean);
+      setScanNote(
+        missing.length
+          ? `${missing.join(', ')}은(는) 못 읽었어요. 직접 입력해 주세요 ✍️`
+          : '다 읽었어요! 맞는지 확인하고 추가해 주세요 👀',
+      );
+    } catch (err) {
+      setScanNote(`영수증을 읽지 못했어요: ${err.message}. 직접 입력해 주세요 ✍️`);
+    } finally {
+      setScanning(false);
     }
   }
 
@@ -149,6 +199,7 @@ export default function Home() {
     setError('');
     setExpenses([data, ...expenses]);
     setForm({ ...form, amount: '', place: '', memo: '' });
+    setScanNote('');
     setOpen(false);
   }
 
@@ -260,6 +311,12 @@ export default function Home() {
         <div className="overlay" onClick={() => setOpen(false)}>
           <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
             <h2>💸 지출 적기</h2>
+
+            <label className="scan">
+              <input type="file" accept="image/*" hidden onChange={scanReceipt} disabled={scanning} />
+              <span className="scan-btn">{scanning ? '읽는 중... 🔍' : '📷 영수증으로 채우기'}</span>
+              {scanNote && <small className="scan-note">{scanNote}</small>}
+            </label>
 
             <label>
               금액

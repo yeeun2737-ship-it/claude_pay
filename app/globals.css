@@ -237,6 +237,20 @@ body {
 }
 .sheet input:focus { outline: none; box-shadow: 3px 3px 0 var(--pink); }
 
+.scan { cursor: pointer; }
+.scan-btn {
+  display: block;
+  text-align: center;
+  font-weight: 900;
+  font-size: 15px;
+  padding: 11px;
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.scan-note { font-size: 12px; font-weight: 700; line-height: 1.4; }
+
 .cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .cat {
   font: inherit;

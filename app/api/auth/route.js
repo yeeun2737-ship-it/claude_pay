@@ -1,20 +1,8 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
-
-const COOKIE = 'unlocked';
-
-const sha = (text) => createHash('sha256').update(text).digest('hex');
-
-function matches(a, b) {
-  const x = Buffer.from(sha(a));
-  const y = Buffer.from(sha(b));
-  return timingSafeEqual(x, y);
-}
+import { COOKIE, isUnlocked, matches, sha } from './lock';
 
 export async function GET() {
-  const password = process.env.APP_PASSWORD;
-  const token = (await cookies()).get(COOKIE)?.value;
-  return Response.json({ unlocked: Boolean(password && token && matches(token, sha(password))) });
+  return Response.json({ unlocked: await isUnlocked() });
 }
 
 export async function POST(request) {
