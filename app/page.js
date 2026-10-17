@@ -30,11 +30,14 @@ async function shrinkImage(file) {
   return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
 }
 
+// 화면에서는 숫자 4자리만 받는다. Supabase는 비밀번호가 6자 이상이어야 해서 고정 문자열을 붙여 보낸다.
+const toPassword = (pin) => `${pin}-tikkeul`;
+
 function authMessage(error) {
   const m = error.message ?? '';
   if (m.includes('Invalid login credentials')) return '이메일 또는 비밀번호가 맞지 않아요';
   if (m.includes('already registered')) return '이미 가입된 이메일이에요';
-  if (m.includes('at least')) return '비밀번호는 6자 이상이어야 해요';
+  if (m.includes('at least')) return '비밀번호는 숫자 4자리예요';
   if (m.includes('Email not confirmed')) return '메일 인증을 먼저 완료해 주세요';
   if (m.includes('rate limit')) return '요청이 너무 많아요. 잠시 후 다시 시도해 주세요';
   return m;
@@ -93,7 +96,7 @@ export default function Home() {
     setAuthBusy(true);
     setAuthError('');
     setAuthInfo('');
-    const credentials = { email: email.trim(), password };
+    const credentials = { email: email.trim(), password: toPassword(password) };
     const { data, error } =
       authMode === 'login'
         ? await supabase.auth.signInWithPassword(credentials)
@@ -181,11 +184,14 @@ export default function Home() {
             className="auth-in"
             type="password"
             autoComplete={login ? 'current-password' : 'new-password'}
-            placeholder="비밀번호 (6자 이상)"
-            minLength={6}
+            inputMode="numeric"
+            pattern="[0-9]{4}"
+            maxLength={4}
+            placeholder="비밀번호 (숫자 4자리)"
+            title="숫자 4자리를 입력해 주세요"
             required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
             aria-label="비밀번호"
           />
           {authError && <p className="lock-error">{authError}</p>}
