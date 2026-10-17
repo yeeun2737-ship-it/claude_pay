@@ -56,6 +56,7 @@ body {
   border-radius: 999px;
   cursor: pointer;
 }
+.lock-btn.left { right: auto; left: 14px; }
 .lock { display: flex; align-items: center; }
 .lock .hero { width: 100%; display: grid; gap: 14px; padding: 32px 22px; }
 .lock .label { margin-top: 0; font-size: 15px; opacity: 0.95; }

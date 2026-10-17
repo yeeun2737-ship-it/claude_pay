@@ -60,6 +60,10 @@ export default function Home() {
   const [authError, setAuthError] = useState('');
   const [authInfo, setAuthInfo] = useState('');
   const [authBusy, setAuthBusy] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwMessage, setPwMessage] = useState('');
+  const [pwBusy, setPwBusy] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanNote, setScanNote] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -151,6 +155,48 @@ export default function Home() {
     } finally {
       setScanning(false);
     }
+  }
+
+  function openPassword() {
+    setPwForm({ current: '', next: '', confirm: '' });
+    setPwMessage('');
+    setPwOpen(true);
+  }
+
+  async function changePassword(e) {
+    e.preventDefault();
+    if (pwForm.next !== pwForm.confirm) {
+      setPwMessage('새 비밀번호가 서로 달라요');
+      return;
+    }
+    if (pwForm.next === pwForm.current) {
+      setPwMessage('지금 비밀번호와 다른 번호로 정해 주세요');
+      return;
+    }
+    setPwBusy(true);
+    setPwMessage('');
+    // 세션만 훔쳐서 비밀번호를 바꾸지 못하게 현재 비밀번호를 먼저 확인한다
+    const check = await supabase.auth.signInWithPassword({
+      email: session.user.email,
+      password: toPassword(pwForm.current),
+    });
+    if (check.error) {
+      setPwBusy(false);
+      setPwMessage('현재 비밀번호가 맞지 않아요');
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: toPassword(pwForm.next) });
+    setPwBusy(false);
+    if (error) {
+      setPwMessage(
+        error.message.includes('different from the old')
+          ? '지금 비밀번호와 다른 번호로 정해 주세요'
+          : authMessage(error),
+      );
+      return;
+    }
+    setPwOpen(false);
+    setError('');
   }
 
   async function logout() {
@@ -335,6 +381,9 @@ export default function Home() {
   return (
     <main className="app">
       <header className="hero">
+        <button className="lock-btn left" onClick={openPassword}>
+          🔑 비밀번호
+        </button>
         <button className="lock-btn" onClick={logout}>
           로그아웃
         </button>
@@ -573,6 +622,43 @@ export default function Home() {
               )}
               <button type="submit" className="primary">
                 {editingId === null ? '추가하기' : '저장하기'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {pwOpen && (
+        <div className="overlay" onClick={() => setPwOpen(false)}>
+          <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={changePassword}>
+            <h2>🔑 비밀번호 바꾸기</h2>
+            {[
+              ['current', '현재 비밀번호', 'current-password'],
+              ['next', '새 비밀번호 (숫자 4자리)', 'new-password'],
+              ['confirm', '새 비밀번호 확인', 'new-password'],
+            ].map(([key, label, autoComplete]) => (
+              <label key={key}>
+                {label}
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
+                  autoComplete={autoComplete}
+                  title="숫자 4자리를 입력해 주세요"
+                  required
+                  value={pwForm[key]}
+                  onChange={(e) => setPwForm({ ...pwForm, [key]: e.target.value.replace(/\D/g, '') })}
+                />
+              </label>
+            ))}
+            {pwMessage && <small className="scan-note">{pwMessage}</small>}
+            <div className="actions">
+              <button type="button" className="ghost" onClick={() => setPwOpen(false)}>
+                취소
+              </button>
+              <button type="submit" className="primary" disabled={pwBusy}>
+                {pwBusy ? '바꾸는 중...' : '바꾸기'}
               </button>
             </div>
           </form>
