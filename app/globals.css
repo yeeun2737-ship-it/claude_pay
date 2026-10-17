@@ -1,0 +1,171 @@
+:root {
+  --ink: #2b2250;
+  --paper: #fff8e7;
+  --pink: #ff8fb1;
+  --yellow: #ffd23f;
+  --card: #ffffff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  background-image: radial-gradient(#ffe3a8 2px, transparent 2px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+.app {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  padding: 16px 16px 110px;
+}
+
+.hero {
+  background: var(--pink);
+  border: 3px solid var(--ink);
+  border-radius: 28px;
+  box-shadow: 6px 6px 0 var(--ink);
+  padding: 20px;
+  text-align: center;
+}
+.brand { font-size: 18px; font-weight: 800; }
+.label { margin-top: 14px; font-size: 14px; }
+.total { font-size: 44px; font-weight: 900; letter-spacing: -1px; margin: 2px 0 12px; word-break: keep-all; }
+.sticker {
+  display: inline-block;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  transform: rotate(-3deg);
+}
+
+.list { margin-top: 24px; display: grid; gap: 18px; }
+.empty { text-align: center; padding: 40px 0; font-size: 18px; font-weight: 700; }
+.empty p:first-child { font-size: 48px; }
+.sub { font-size: 13px; font-weight: 400; opacity: 0.7; margin-top: 4px; }
+
+.day-head {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 0 6px 6px;
+}
+.day ul {
+  list-style: none;
+  background: var(--card);
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--ink);
+  overflow: hidden;
+}
+.day li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+.day li + li { border-top: 2px dashed var(--ink); }
+.chip {
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.info strong { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.info small { font-size: 12px; opacity: 0.65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.amount { font-weight: 900; font-size: 15px; white-space: nowrap; }
+
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: max(20px, calc(50% - 215px + 20px));
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  color: var(--ink);
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+.fab:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 34, 80, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 10;
+}
+.sheet {
+  width: 100%;
+  max-width: 430px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-bottom: none;
+  border-radius: 28px 28px 0 0;
+  padding: 20px 18px 28px;
+  display: grid;
+  gap: 14px;
+}
+.sheet h2 { font-size: 20px; }
+.sheet label, .field { display: grid; gap: 6px; font-weight: 800; font-size: 14px; }
+.sheet input {
+  font: inherit;
+  font-weight: 400;
+  font-size: 16px;
+  padding: 10px 12px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  width: 100%;
+}
+.sheet input:focus { outline: none; box-shadow: 3px 3px 0 var(--pink); }
+
+.cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.cat {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px 4px;
+  background: #fff;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  cursor: pointer;
+}
+.cat.on { background: var(--c); box-shadow: 3px 3px 0 var(--ink); transform: translate(-1px, -1px); }
+
+.actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 4px; }
+.actions button {
+  font: inherit;
+  font-weight: 900;
+  font-size: 16px;
+  padding: 12px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.ghost { background: #fff; }
+.primary { background: var(--pink); box-shadow: 3px 3px 0 var(--ink); }
