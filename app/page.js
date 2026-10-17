@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from './supabase';
 
 const CATEGORIES = [
   { name: '식비', emoji: '🍙', color: '#ffd23f' },
@@ -61,14 +60,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!unlocked) return;
-    supabase
-      .from('expenses')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (error) setError('불러오지 못했어요: ' + error.message);
-        else setExpenses(data);
-      });
+    fetch('/api/expenses')
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        setExpenses(data);
+      })
+      .catch((err) => setError('불러오지 못했어요: ' + err.message));
   }, [unlocked]);
 
   async function unlock(e) {
@@ -187,13 +185,14 @@ export default function Home() {
     e.preventDefault();
     const amount = Number(form.amount);
     if (!amount || amount <= 0 || !form.place.trim()) return;
-    const { data, error } = await supabase
-      .from('expenses')
-      .insert({ ...form, amount, place: form.place.trim(), memo: form.memo.trim() })
-      .select()
-      .single();
-    if (error) {
-      setError('저장하지 못했어요: ' + error.message);
+    const res = await fetch('/api/expenses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, amount }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError('저장하지 못했어요: ' + data.error);
       return;
     }
     setError('');
