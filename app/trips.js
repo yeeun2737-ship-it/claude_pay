@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from './supabase';
-import { CURRENCIES, currencyOf, toDateStr, won } from './shared';
+import { CURRENCIES, currencyOf, perPerson, toDateStr, won } from './shared';
 import TripPlan from './trip-plan';
 
 const newTrip = () => ({
@@ -10,6 +10,7 @@ const newTrip = () => ({
   start_date: toDateStr(new Date()),
   end_date: toDateStr(new Date()),
   currency: 'KRW',
+  people: 1,
 });
 
 const shortDate = (s) => s.slice(5).replace('-', '/');
@@ -41,6 +42,7 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
       start_date: form.start_date,
       end_date: form.end_date,
       currency: form.currency,
+      people: form.people,
     };
     const query = id === null ? supabase.from('trips').insert(row) : supabase.from('trips').update(row).eq('id', id);
     const { data, error } = await query.select().single();
@@ -87,6 +89,7 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
   }
 
   const setField = (key) => (e) => setSheet({ ...sheet, form: { ...sheet.form, [key]: e.target.value } });
+  const setPeople = (n) => setSheet({ ...sheet, form: { ...sheet.form, people: Math.min(99, Math.max(1, n)) } });
 
   return (
     <section className="trips">
@@ -110,11 +113,13 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
                   {t.is_active && <span className="badge">여행 모드 ON</span>}
                 </div>
                 <small>
-                  {periodText(t)} · {currencyOf(t.currency).symbol} {currencyOf(t.currency).label} · {statusText(t)}
+                  {periodText(t)} · {currencyOf(t.currency).symbol} {currencyOf(t.currency).label} · 👥 {t.people}명 ·{' '}
+                  {statusText(t)}
                 </small>
                 <span className="trip-total">
                   {won(total(t.id))} <small>{spent(t.id).length}건</small>
                 </span>
+                {t.people > 1 && <span className="pp">1인 {won(perPerson(total(t.id), t.people))}</span>}
               </li>
             ))}
           </ul>
@@ -132,12 +137,17 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
               {trip.is_active && <span className="badge">여행 모드 ON</span>}
             </div>
             <small>
-              {trip.start_date} ~ {trip.end_date} · {currencyOf(trip.currency).symbol} {currencyOf(trip.currency).label} ·{' '}
-              {statusText(trip)}
+              {trip.start_date} ~ {trip.end_date} · {currencyOf(trip.currency).symbol} {currencyOf(trip.currency).label} · 👥{' '}
+              {trip.people}명 · {statusText(trip)}
             </small>
             <p className="trip-sum">
               {won(total(trip.id))} <small>지출 {spent(trip.id).length}건</small>
             </p>
+            {trip.people > 1 && (
+              <p className="pp">
+                1인 {won(perPerson(total(trip.id), trip.people))} <small>({trip.people}명으로 나눈 금액)</small>
+              </p>
+            )}
             <button className={trip.is_active ? 'mode on' : 'mode'} onClick={toggleMode}>
               {trip.is_active ? '여행 모드 끄기' : '여행 모드 켜기 (지출이 이 여행에 자동 연결돼요)'}
             </button>
@@ -181,6 +191,18 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
                 onChange={setField('end_date')}
               />
             </label>
+            <div className="field">
+              인원
+              <div className="stepper">
+                <button type="button" disabled={sheet.form.people <= 1} onClick={() => setPeople(sheet.form.people - 1)}>
+                  −
+                </button>
+                <strong>{sheet.form.people}명</strong>
+                <button type="button" disabled={sheet.form.people >= 99} onClick={() => setPeople(sheet.form.people + 1)}>
+                  +
+                </button>
+              </div>
+            </div>
             <div className="field">
               기본 통화
               <div className="curs">

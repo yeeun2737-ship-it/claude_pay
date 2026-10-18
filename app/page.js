@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
-import { CURRENCIES, currencyOf, pad, toDateStr, won } from './shared';
+import { CURRENCIES, currencyOf, pad, perPerson, toDateStr, won } from './shared';
 import TripsView from './trips';
 
 const CATEGORIES = [
@@ -649,6 +649,7 @@ export default function Home() {
             <ul>
               {items.map((e) => {
                 const c = catOf(e.category);
+                const people = trips.find((t) => t.id === e.trip_id)?.people ?? 1;
                 return (
                   <li key={e.id} className="row" onClick={() => openEdit(e)}>
                     <span className="chip" style={{ '--c': c.color }}>
@@ -672,6 +673,7 @@ export default function Home() {
                           {Number(e.original_amount).toLocaleString('ko-KR')} · 환율 {Number(e.exchange_rate).toLocaleString('ko-KR')}
                         </small>
                       )}
+                      {people > 1 && <small className="pp-line">👥 1인 {won(perPerson(e.amount, people))}</small>}
                     </div>
                   </li>
                 );

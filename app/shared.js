@@ -13,3 +13,5 @@ export const currencyOf = (code) => CURRENCIES.find((c) => c.code === code) ?? C
 export const pad = (n) => String(n).padStart(2, '0');
 export const toDateStr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 export const won = (n) => n.toLocaleString('ko-KR') + '원';
+// 1인 금액: 금액 ÷ 인원 수를 원 단위로 반올림
+export const perPerson = (amount, people) => Math.round(amount / people);
