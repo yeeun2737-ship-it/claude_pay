@@ -189,7 +189,7 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
                     type="button"
                     key={c.code}
                     className={sheet.form.currency === c.code ? 'cat on' : 'cat'}
-                    style={{ '--c': '#4f46e5' }}
+                    style={{ '--c': '#ffd23f' }}
                     onClick={() => setSheet({ ...sheet, form: { ...sheet.form, currency: c.code } })}
                   >
                     {c.symbol} {c.label}
