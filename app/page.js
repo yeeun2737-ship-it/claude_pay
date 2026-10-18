@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
+import { CURRENCIES, currencyOf, pad, toDateStr, won } from './shared';
+import TripsView from './trips';
 
 const CATEGORIES = [
   { name: '식비', emoji: '🍙', color: '#f59e0b' },
@@ -12,11 +14,17 @@ const CATEGORIES = [
   { name: '기타', emoji: '✨', color: '#64748b' },
 ];
 
+// 그 날짜의 환율(1 외화 = ? 원). 주말·휴일은 서비스가 직전 영업일 값을 주고, 미래 날짜는 최신 환율을 쓴다.
+async function fetchRate(currency, date, signal) {
+  const day = date > toDateStr(new Date()) ? 'latest' : date;
+  const res = await fetch(`https://api.frankfurter.dev/v1/${day}?base=${currency}&symbols=KRW`, { signal });
+  if (!res.ok) throw new Error('환율 조회 실패');
+  const data = await res.json();
+  return { rate: data.rates.KRW, date: data.date };
+}
+
 const catOf = (name) => CATEGORIES.find((c) => c.name === name) ?? CATEGORIES[5];
 
-const pad = (n) => String(n).padStart(2, '0');
-const toDateStr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const won = (n) => n.toLocaleString('ko-KR') + '원';
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 // 영수증 사진을 긴 변 1600px 이하 JPEG로 줄여 base64(헤더 제외)로 반환
@@ -50,6 +58,7 @@ function formatDate(str) {
 
 export default function Home() {
   const [expenses, setExpenses] = useState([]);
+  const [trips, setTrips] = useState([]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('list');
@@ -73,7 +82,16 @@ export default function Home() {
     category: CATEGORIES[0].name,
     date: toDateStr(new Date()),
     memo: '',
+    currency: 'KRW',
+    rate: '',
+    krw: '',
+    tripId: '',
   });
+  // 원화 금액을 사용자가 직접 고친 상태(true)면 환율·금액이 바뀌어도 자동 계산으로 덮어쓰지 않는다
+  const [krwManual, setKrwManual] = useState(false);
+  // 저장돼 있던 환율을 보여주는 중이면(수정 화면) 새로 가져오지 않는다
+  const [rateLocked, setRateLocked] = useState(false);
+  const [rateNote, setRateNote] = useState('');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -84,6 +102,23 @@ export default function Home() {
   const userId = session?.user.id;
 
   useEffect(() => {
+    if (!open || form.currency === 'KRW' || !form.date || rateLocked) return;
+    const controller = new AbortController();
+    setRateNote('환율 가져오는 중...');
+    fetchRate(form.currency, form.date, controller.signal)
+      .then(({ rate, date }) => {
+        setForm((f) => ({ ...f, rate: String(rate) }));
+        setRateNote(`${date} 기준 환율을 가져왔어요`);
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setForm((f) => ({ ...f, rate: '' }));
+        setRateNote('환율을 가져오지 못했어요. 환율이나 원화 금액을 직접 입력해 주세요');
+      });
+    return () => controller.abort();
+  }, [open, form.currency, form.date, rateLocked]);
+
+  useEffect(() => {
     if (!userId) return;
     supabase
       .from('expenses')
@@ -92,6 +127,13 @@ export default function Home() {
       .then(({ data, error }) => {
         if (error) setError('불러오지 못했어요: ' + error.message);
         else setExpenses(data);
+      });
+    supabase
+      .from('trips')
+      .select('*')
+      .then(({ data, error }) => {
+        if (error) setError('여행을 불러오지 못했어요: ' + error.message);
+        else setTrips(data);
       });
   }, [userId]);
 
@@ -304,30 +346,82 @@ export default function Home() {
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
+  const activeTrip = trips.find((t) => t.is_active);
+  const tripName = (id) => trips.find((t) => t.id === id)?.name;
+  const foreign = form.currency !== 'KRW';
+  // 원화 금액: 직접 고친 값이 있으면 그 값, 아니면 금액 × 환율(반올림)
+  const autoKrw = Number(form.amount) > 0 && Number(form.rate) > 0 ? Math.round(Number(form.amount) * Number(form.rate)) : '';
+  const krwValue = krwManual ? form.krw : String(autoKrw);
+
+  // 금액·통화·날짜가 바뀌면 원화 금액은 다시 자동 계산으로 돌아간다
+  const setAmount = (e) => {
+    setKrwManual(false);
+    setForm({ ...form, amount: e.target.value });
+  };
+  const setCurrency = (code) => {
+    setKrwManual(false);
+    setRateLocked(false);
+    setForm({ ...form, currency: code, rate: '' });
+  };
+  const setDate = (e) => {
+    setKrwManual(false);
+    setRateLocked(false);
+    setForm({ ...form, date: e.target.value });
+  };
+  const setRate = (e) => {
+    setKrwManual(false);
+    setForm({ ...form, rate: e.target.value });
+  };
+  const setKrw = (e) => {
+    setKrwManual(true);
+    setForm({ ...form, krw: e.target.value });
+  };
+
   const emptyForm = {
     amount: '',
     place: '',
     category: CATEGORIES[0].name,
     date: toDateStr(new Date()),
     memo: '',
+    currency: 'KRW',
+    rate: '',
+    krw: '',
+    tripId: '',
   };
 
   function openNew() {
-    // 고치던 내용이 새 입력 칸에 남지 않게 비운다
-    if (editingId !== null) setForm(emptyForm);
+    // 고치던 내용이 새 입력 칸에 남지 않게 비우고, 여행 모드가 켜져 있으면 그 여행과 통화를 미리 고른다
+    const base = editingId !== null ? emptyForm : form;
+    setForm(
+      activeTrip
+        ? { ...base, tripId: String(activeTrip.id), currency: activeTrip.currency, rate: '' }
+        : { ...base, tripId: '' },
+    );
     setEditingId(null);
+    setKrwManual(false);
+    setRateLocked(false);
+    setRateNote('');
     setScanNote('');
     setOpen(true);
   }
 
   function openEdit(e) {
+    const isForeign = e.currency !== 'KRW';
     setForm({
-      amount: String(e.amount),
+      amount: String(isForeign ? e.original_amount : e.amount),
       place: e.place,
       category: e.category,
       date: e.date,
       memo: e.memo ?? '',
+      currency: e.currency,
+      rate: isForeign ? String(e.exchange_rate) : '',
+      krw: String(e.amount),
+      tripId: e.trip_id ? String(e.trip_id) : '',
     });
+    // 저장해 둔 환율과 원화 금액을 그대로 보여준다
+    setKrwManual(isForeign);
+    setRateLocked(isForeign);
+    setRateNote(isForeign ? '저장된 환율이에요' : '');
     setEditingId(e.id);
     setOpen(true);
   }
@@ -336,13 +430,22 @@ export default function Home() {
     e.preventDefault();
     const amount = Number(form.amount);
     if (!amount || amount <= 0 || !form.place.trim()) return;
+    const krw = Number(krwValue);
+    if (foreign && !(Number.isInteger(krw) && krw > 0)) {
+      setError('원화 금액이나 환율을 입력해 주세요');
+      return;
+    }
     const editing = editingId !== null;
     const row = {
-      amount,
+      amount: foreign ? krw : amount,
       place: form.place.trim(),
       category: form.category,
       date: form.date,
       memo: form.memo.trim(),
+      currency: form.currency,
+      original_amount: foreign ? amount : null,
+      exchange_rate: foreign ? Number((krw / amount).toFixed(6)) : null,
+      trip_id: form.tripId ? Number(form.tripId) : null,
     };
     const query = editing
       ? supabase.from('expenses').update(row).eq('id', editingId)
@@ -357,8 +460,11 @@ export default function Home() {
     if (editing) {
       setForm(emptyForm);
       setEditingId(null);
+      setKrwManual(false);
+      setRateLocked(false);
     } else {
-      setForm({ ...form, amount: '', place: '', memo: '' });
+      setForm({ ...form, amount: '', place: '', memo: '', krw: '' });
+      setKrwManual(false);
     }
     setScanNote('');
     setOpen(false);
@@ -401,7 +507,20 @@ export default function Home() {
         <button className={tab === 'stats' ? 'tab on' : 'tab'} onClick={() => setTab('stats')}>
           📊 통계
         </button>
+        <button className={tab === 'trips' ? 'tab on' : 'tab'} onClick={() => setTab('trips')}>
+          🧳 여행
+        </button>
       </nav>
+
+      {tab === 'trips' && (
+        <TripsView
+          trips={trips}
+          setTrips={setTrips}
+          expenses={expenses}
+          setExpenses={setExpenses}
+          setError={setError}
+        />
+      )}
 
       {tab === 'stats' && (
         <section className="stats">
@@ -532,9 +651,23 @@ export default function Home() {
                     </span>
                     <div className="info">
                       <strong>{e.place}</strong>
-                      {e.memo && <small>{e.memo}</small>}
+                      {(e.trip_id || e.memo) && (
+                        <small>
+                          {e.trip_id && `🧳 ${tripName(e.trip_id) ?? ''}`}
+                          {e.trip_id && e.memo && ' · '}
+                          {e.memo}
+                        </small>
+                      )}
                     </div>
-                    <span className="amount">{won(e.amount)}</span>
+                    <div className="amt">
+                      <span className="amount">{won(e.amount)}</span>
+                      {e.currency !== 'KRW' && (
+                        <small>
+                          {currencyOf(e.currency).symbol}
+                          {Number(e.original_amount).toLocaleString('ko-KR')} · 환율 {Number(e.exchange_rate).toLocaleString('ko-KR')}
+                        </small>
+                      )}
+                    </div>
                   </li>
                 );
               })}
@@ -560,18 +693,67 @@ export default function Home() {
               </label>
             )}
 
+            <div className="field">
+              통화
+              <div className="curs">
+                {CURRENCIES.map((c) => (
+                  <button
+                    type="button"
+                    key={c.code}
+                    className={form.currency === c.code ? 'cat on' : 'cat'}
+                    style={{ '--c': '#4f46e5' }}
+                    onClick={() => setCurrency(c.code)}
+                  >
+                    {c.symbol} {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <label>
-              금액
+              {foreign ? `금액 (${currencyOf(form.currency).label})` : '금액'}
               <input
                 type="number"
-                inputMode="numeric"
-                min="1"
+                inputMode={foreign ? 'decimal' : 'numeric'}
+                min={foreign ? '0.01' : '1'}
+                step={foreign ? 'any' : '1'}
                 placeholder="0"
                 value={form.amount}
-                onChange={set('amount')}
+                onChange={setAmount}
                 required
               />
             </label>
+
+            {foreign && (
+              <>
+                <label>
+                  환율 (1{currencyOf(form.currency).label} = ?원)
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="any"
+                    placeholder="0"
+                    value={form.rate}
+                    onChange={setRate}
+                  />
+                </label>
+                <label>
+                  원화 금액 (원)
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    step="1"
+                    placeholder="0"
+                    value={krwValue}
+                    onChange={setKrw}
+                    required
+                  />
+                  {rateNote && <small className="scan-note">{rateNote}</small>}
+                </label>
+              </>
+            )}
 
             <label>
               사용처
@@ -603,13 +785,27 @@ export default function Home() {
 
             <label>
               날짜
-              <input type="date" value={form.date} onChange={set('date')} required />
+              <input type="date" value={form.date} onChange={setDate} required />
             </label>
 
             <label>
               메모
               <input type="text" placeholder="(선택)" value={form.memo} onChange={set('memo')} />
             </label>
+
+            {trips.length > 0 && (
+              <label>
+                여행
+                <select value={form.tripId} onChange={set('tripId')}>
+                  <option value="">연결 안 함</option>
+                  {trips.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             <div className={editingId === null ? 'actions' : 'actions edit'}>
               <button type="button" className="ghost" onClick={() => setOpen(false)}>
