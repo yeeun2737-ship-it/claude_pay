@@ -2,17 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
-import { CURRENCIES, currencyOf, pad, perPerson, toDateStr, won } from './shared';
+import { CATEGORIES, CURRENCIES, currencyOf, formatDate, pad, toDateStr, won } from './shared';
+import ExpenseRow from './expense-row';
 import TripsView from './trips';
-
-const CATEGORIES = [
-  { name: '식비', emoji: '🍙', color: '#ffd23f' },
-  { name: '카페', emoji: '☕', color: '#ff8fb1' },
-  { name: '교통', emoji: '🚌', color: '#7fd6ff' },
-  { name: '쇼핑', emoji: '🛍️', color: '#b9a3ff' },
-  { name: '구독', emoji: '📺', color: '#8fe3a3' },
-  { name: '기타', emoji: '✨', color: '#ffb36b' },
-];
 
 // 그 날짜의 환율(1 외화 = ? 원). 주말·휴일은 서비스가 직전 영업일 값을 주고, 미래 날짜는 최신 환율을 쓴다.
 async function fetchRate(currency, date, signal) {
@@ -22,10 +14,6 @@ async function fetchRate(currency, date, signal) {
   const data = await res.json();
   return { rate: data.rates.KRW, date: data.date };
 }
-
-const catOf = (name) => CATEGORIES.find((c) => c.name === name) ?? CATEGORIES[5];
-
-const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 // 영수증 사진을 긴 변 1600px 이하 JPEG로 줄여 base64(헤더 제외)로 반환
 async function shrinkImage(file) {
@@ -49,11 +37,6 @@ function authMessage(error) {
   if (m.includes('Email not confirmed')) return '메일 인증을 먼저 완료해 주세요';
   if (m.includes('rate limit')) return '요청이 너무 많아요. 잠시 후 다시 시도해 주세요';
   return m;
-}
-
-function formatDate(str) {
-  const [y, m, d] = str.split('-').map(Number);
-  return `${m}월 ${d}일 (${DAYS[new Date(y, m - 1, d).getDay()]})`;
 }
 
 export default function Home() {
@@ -520,6 +503,7 @@ export default function Home() {
           expenses={expenses}
           setExpenses={setExpenses}
           setError={setError}
+          onEditExpense={openEdit}
         />
       )}
 
@@ -647,37 +631,15 @@ export default function Home() {
               <span>{won(items.reduce((s, e) => s + e.amount, 0))}</span>
             </div>
             <ul>
-              {items.map((e) => {
-                const c = catOf(e.category);
-                const people = trips.find((t) => t.id === e.trip_id)?.people ?? 1;
-                return (
-                  <li key={e.id} className="row" onClick={() => openEdit(e)}>
-                    <span className="chip" style={{ '--c': c.color }}>
-                      {c.emoji} {c.name}
-                    </span>
-                    <div className="info">
-                      <strong>{e.place}</strong>
-                      {(e.trip_id || e.memo) && (
-                        <small>
-                          {e.trip_id && `🧳 ${tripName(e.trip_id) ?? ''}`}
-                          {e.trip_id && e.memo && ' · '}
-                          {e.memo}
-                        </small>
-                      )}
-                    </div>
-                    <div className="amt">
-                      <span className="amount">{won(e.amount)}</span>
-                      {e.currency !== 'KRW' && (
-                        <small>
-                          {currencyOf(e.currency).symbol}
-                          {Number(e.original_amount).toLocaleString('ko-KR')} · 환율 {Number(e.exchange_rate).toLocaleString('ko-KR')}
-                        </small>
-                      )}
-                      {people > 1 && <small className="pp-line">👥 1인 {won(perPerson(e.amount, people))}</small>}
-                    </div>
-                  </li>
-                );
-              })}
+              {items.map((e) => (
+                <ExpenseRow
+                  key={e.id}
+                  expense={e}
+                  tripLabel={e.trip_id ? `🧳 ${tripName(e.trip_id) ?? ''}` : null}
+                  people={trips.find((t) => t.id === e.trip_id)?.people ?? 1}
+                  onOpen={openEdit}
+                />
+              ))}
             </ul>
           </div>
         ))}

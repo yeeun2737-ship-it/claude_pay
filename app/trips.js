@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { supabase } from './supabase';
-import { CURRENCIES, currencyOf, perPerson, toDateStr, won } from './shared';
+import { CURRENCIES, currencyOf, formatDate, perPerson, toDateStr, won } from './shared';
+import ExpenseRow from './expense-row';
 import TripPlan from './trip-plan';
 
 const newTrip = () => ({
@@ -23,7 +24,7 @@ function statusText(t) {
   return `D-${Math.round((new Date(t.start_date) - new Date(today)) / 86400000)}`;
 }
 
-export default function TripsView({ trips, setTrips, expenses, setExpenses, setError }) {
+export default function TripsView({ trips, setTrips, expenses, setExpenses, setError, onEditExpense }) {
   const [openId, setOpenId] = useState(null);
   const [sheet, setSheet] = useState(null); // { id: 수정 중인 여행 id 또는 null, form }
   const [busy, setBusy] = useState(false);
@@ -32,6 +33,14 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
   const trip = trips.find((t) => t.id === openId);
   const spent = (id) => expenses.filter((e) => e.trip_id === id);
   const total = (id) => spent(id).reduce((s, e) => s + e.amount, 0);
+  // 이 여행에 연결된 지출만 날짜별(최신 날짜 먼저)로 묶는다
+  const spentByDay = (id) =>
+    Object.entries(
+      spent(id).reduce((acc, e) => {
+        (acc[e.date] ??= []).push(e);
+        return acc;
+      }, {}),
+    ).sort(([a], [b]) => (a < b ? 1 : -1));
 
   async function save(e) {
     e.preventDefault();
@@ -159,6 +168,25 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
             </div>
           </div>
           <TripPlan trip={trip} setError={setError} />
+          <div className="trip-spent">
+            <h3>🧾 지출 내역</h3>
+            {spent(trip.id).length === 0 && (
+              <p className="plan-empty">이 여행에 연결된 지출이 없어요. 여행 모드를 켜고 지출을 입력하면 자동으로 연결돼요</p>
+            )}
+            {spentByDay(trip.id).map(([date, items]) => (
+              <div className="day" key={date}>
+                <div className="day-head">
+                  <span>{formatDate(date)}</span>
+                  <span>{won(items.reduce((s, e) => s + e.amount, 0))}</span>
+                </div>
+                <ul>
+                  {items.map((e) => (
+                    <ExpenseRow key={e.id} expense={e} tripLabel={null} people={trip.people} onOpen={onEditExpense} />
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </>
       )}
 
