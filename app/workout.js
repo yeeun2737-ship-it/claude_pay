@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { WEEKDAY_NAMES, daysInMonth, todayStr, weekday } from './dates';
 import { pad } from './shared';
@@ -102,7 +102,6 @@ export default function Workout({ setError }) {
   const [checks, setChecks] = useState([]);
   const [sheet, setSheet] = useState(null); // { item }
   const [newHabit, setNewHabit] = useState('');
-  const trackerRef = useRef(null);
 
   const total = daysInMonth(ym.y, ym.m);
   const first = `${ym.y}-${pad(ym.m)}-01`;
@@ -143,15 +142,15 @@ export default function Workout({ setError }) {
   const move = (delta) => {
     const d = new Date(Date.UTC(ym.y, ym.m - 1 + delta, 1));
     setYm({ y: d.getUTCFullYear(), m: d.getUTCMonth() + 1 });
+    setTrackStart(null);
   };
 
-  // 이번 달이면 습관 표를 오늘 날짜 쪽으로 미리 밀어 둔다(1~31일이 한 화면에 안 들어가서)
-  useEffect(() => {
-    const wrap = trackerRef.current;
-    if (!wrap || habits.length === 0) return;
-    const isThisMonth = ym.y === Number(today.slice(0, 4)) && ym.m === Number(today.slice(5, 7));
-    wrap.scrollLeft = isThisMonth ? Math.max(0, (Number(today.slice(8)) - 4) * 28) : 0;
-  }, [ym.y, ym.m, habits.length]);
+  // 습관 표는 7일씩 보여준다. 이번 달이면 오늘이 들어가도록 시작 위치를 잡는다.
+  const maxStart = Math.max(0, total - 7);
+  const [trackStart, setTrackStart] = useState(null);
+  const isThisMonth = ym.y === Number(today.slice(0, 4)) && ym.m === Number(today.slice(5, 7));
+  const start = Math.min(maxStart, Math.max(0, trackStart ?? (isThisMonth ? Number(today.slice(8)) - 4 : 0)));
+  const shownDays = days.slice(start, start + 7);
 
   const thisMonth = ym.y === Number(today.slice(0, 4)) && ym.m === Number(today.slice(5, 7));
 
@@ -269,13 +268,25 @@ export default function Workout({ setError }) {
 
       <div className="card">
         <h3><Icon name="today" size={20} /> 습관 트래커</h3>
-        <div className="tracker-wrap" ref={trackerRef}>
+        <div className="tr-nav">
+          <button type="button" onClick={() => setTrackStart(Math.max(0, start - 7))} disabled={start === 0} aria-label="이전 7일">
+            ◀
+          </button>
+          <span>
+            {Number(shownDays[0].slice(5, 7))}/{Number(shownDays[0].slice(8))} ~ {Number(shownDays.at(-1).slice(5, 7))}/{Number(shownDays.at(-1).slice(8))}
+          </span>
+          <button type="button" onClick={() => setTrackStart(Math.min(maxStart, start + 7))} disabled={start >= maxStart} aria-label="다음 7일">
+            ▶
+          </button>
+        </div>
+        <div className="tracker-wrap">
           <table className="tracker">
             <thead>
               <tr>
                 <th className="hname" />
-                {days.map((d) => (
+                {shownDays.map((d) => (
                   <th key={d} className={d === today ? 'tday today' : 'tday'}>
+                    <small>{WEEKDAY_NAMES[weekday(d)]}</small>
                     {Number(d.slice(8))}
                   </th>
                 ))}
@@ -293,7 +304,7 @@ export default function Workout({ setError }) {
                       ✕
                     </button>
                   </th>
-                  {days.map((d) => (
+                  {shownDays.map((d) => (
                     <td key={d}>
                       <button type="button" className={checked(h, d) ? 'tcell on' : 'tcell'} onClick={() => toggle(h, d)} aria-label={`${h.name} ${d}`} />
                     </td>

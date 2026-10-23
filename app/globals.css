@@ -361,7 +361,7 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .trip-spent h3 { margin-top: 4px; --hl: var(--rose); }
 
 /* 공통 작은 부품 */
-.card { padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.card { padding: 14px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
 .card-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card small { font-size: 12px; color: var(--muted); }
 .mini { font: inherit; font-size: 12px; color: var(--ink); background: var(--mustard); border: 1.2px solid var(--edge); border-radius: 6px; padding: 3px 11px; cursor: pointer; }
@@ -380,7 +380,7 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .check { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--c); border: 1.3px solid var(--edge); font: inherit; font-size: 14px; font-weight: 700; color: var(--ink); cursor: pointer; }
 .task.done .check { background: var(--sage-d); color: #fffaf0; }
 .task-body { flex: 1; min-width: 0; display: grid; gap: 1px; cursor: pointer; }
-.task-body strong { font-size: 16px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task-body strong { font-size: 16px; font-weight: 400; overflow-wrap: anywhere; }
 .task-body small { font-size: 12px; color: var(--muted); }
 .task.done .task-body strong { text-decoration: line-through; color: var(--muted); }
 .quick { display: flex; gap: 8px; margin-top: 4px; }
@@ -449,16 +449,20 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .kinds { display: flex; flex-wrap: wrap; gap: 6px; }
 .kind { font: inherit; font-size: 13px; color: var(--ink); background: var(--paper-2); border: 1.2px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
 .kind.on { background: var(--mustard); border-color: var(--edge); font-weight: 700; }
-.tracker-wrap { overflow-x: auto; margin: 0 -4px; padding-bottom: 4px; }
-.tracker { border-collapse: separate; border-spacing: 2px; }
+.tr-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+.tr-nav button { font: inherit; font-size: 12px; color: var(--ink); background: var(--paper-2); border: 1.2px solid var(--edge); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
+.tr-nav button:disabled { opacity: 0.35; cursor: default; }
+.tracker-wrap { overflow: hidden; }
+.tracker { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 3px; }
 .tracker th, .tracker td { padding: 0; text-align: center; font-weight: 400; }
-.tday { min-width: 26px; font-size: 11px; color: var(--muted); }
+.tday { vertical-align: top; font-size: 12px; color: var(--ink); line-height: 1.2; }
+.tday small { display: block; height: 12px; line-height: 12px; font-size: 10px; font-weight: 400; color: var(--muted); }
 .tday.today { color: #b5594f; font-weight: 700; }
-.hname { position: sticky; left: 0; z-index: 1; min-width: 96px; max-width: 96px; background: var(--paper-2); text-align: left !important; font-size: 13px !important; white-space: nowrap; }
-.hname span { display: inline-block; max-width: 70px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
-.hname small { margin-left: 4px; color: var(--accent); font-size: 10px; }
-.hname button { font: inherit; font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; }
-.tcell { width: 18px; height: 18px; border-radius: 50%; background: transparent; border: 1px solid var(--line); cursor: pointer; }
+.hname { width: 34%; text-align: left !important; font-size: 13px !important; white-space: nowrap; overflow: hidden; }
+.hname span { display: inline-block; max-width: calc(100% - 18px); overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+.hname small { margin-left: 3px; color: var(--accent); font-size: 10px; }
+.hname button { font: inherit; font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; vertical-align: middle; }
+.tcell { width: 21px; height: 21px; border-radius: 50%; background: transparent; border: 1px solid var(--line); cursor: pointer; }
 .tracker tbody tr .tcell.on { background: var(--rose-d); border-color: transparent; }
 .tracker tbody tr:nth-child(4n+2) .tcell.on { background: var(--sage-d); }
 .tracker tbody tr:nth-child(4n+3) .tcell.on { background: var(--mustard-d); }
