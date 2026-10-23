@@ -2,17 +2,15 @@
 
 import { useState } from 'react';
 import { WEEKDAY_NAMES, addDays, dayTitle, daysInMonth, occursOn, timeText, todayStr, weekday } from './dates';
-import { catOf, labelHex, pad, won } from './shared';
+import { labelHex, pad } from './shared';
 import { usePlanner } from './planner-data';
 import EventSheet from './event-sheet';
 import TaskRow from './task-row';
 import TaskSheet from './task-sheet';
 import { minutesText } from './workout';
+import Icon from './icons';
 
-// 칸이 좁아서 지출 합계는 "1.2만"처럼 줄여 쓴다
-const shortWon = (n) => (n >= 10000 ? `${Math.round(n / 1000) / 10}만` : n.toLocaleString('ko-KR'));
-
-// 월간 달력: 날짜 칸에 일정, 지출 합계, 여행 기간 띠를 보여주고 날짜를 누르면 그날을 자세히 본다.
+// 월간 달력: 날짜 칸에 일정, 여행 기간 띠를 보여주고 날짜를 누르면 그날을 자세히 본다.
 export default function Month({ setError }) {
   const today = todayStr();
   const [ym, setYm] = useState({ y: Number(today.slice(0, 4)), m: Number(today.slice(5, 7)) });
@@ -30,7 +28,6 @@ export default function Month({ setError }) {
   const P = usePlanner(gridStart, gridEnd, setError);
   const categories = [...new Set([...P.tasks, ...P.events].map((x) => x.category).filter(Boolean))];
 
-  const spentOn = (day) => P.expenses.filter((e) => e.date === day).reduce((s, e) => s + e.amount, 0);
   const eventsOn = (day) =>
     P.events.filter((ev) => occursOn(ev, day)).sort((a, b) => ((a.start_time ?? '99') < (b.start_time ?? '99') ? -1 : 1));
   const tripsOn = (day) => P.trips.filter((t) => t.start_date <= day && day <= t.end_date);
@@ -46,7 +43,6 @@ export default function Month({ setError }) {
   const selWorkouts = P.workouts.filter((w) => w.day === selected);
   const selEvents = eventsOn(selected);
   const selTasks = P.tasks.filter((t) => occursOn(t, selected));
-  const selSpent = P.expenses.filter((e) => e.date === selected);
 
   return (
     <section className="month">
@@ -87,7 +83,6 @@ export default function Month({ setError }) {
         ))}
         {days.map((day) => {
           const evs = eventsOn(day);
-          const spent = spentOn(day);
           const bands = tripsOn(day);
           const cls = ['cal-cell', day === today && 'today', day === selected && 'sel', !day.startsWith(`${ym.y}-${pad(ym.m)}`) && 'dim']
             .filter(Boolean)
@@ -95,14 +90,13 @@ export default function Month({ setError }) {
           return (
             <button type="button" key={day} className={cls} onClick={() => setSelected(day)}>
               <span className="cal-num">{Number(day.slice(8))}</span>
-              {workoutDays.has(day) && <span className="cal-wo">🏃</span>}
+              {workoutDays.has(day) && <span className="cal-wo"><Icon name="workout" size={12} /></span>}
               {evs.slice(0, 2).map((ev) => (
                 <span className="cal-ev" key={ev.id} style={{ '--c': labelHex(ev.color) }}>
                   {ev.title}
                 </span>
               ))}
               {evs.length > 2 && <span className="cal-more">+{evs.length - 2}</span>}
-              {spent > 0 && <span className="cal-sum">{shortWon(spent)}</span>}
               {bands.map((t) => (
                 <i className="cal-trip" key={t.id} title={t.name}>
                   {day === t.start_date || weekday(day) === 0 ? t.name : ''}
@@ -117,13 +111,13 @@ export default function Month({ setError }) {
         <h3>{dayTitle(selected)}</h3>
         {tripsOn(selected).map((t) => (
           <span className="trip-band" key={t.id}>
-            🧳 {t.name}
+            <Icon name="suitcase" size={14} /> {t.name}
           </span>
         ))}
 
         <div className="detail-sec">
           <div className="card-title">
-            <b>📌 일정</b>
+            <b><Icon name="pin" size={16} /> 일정</b>
             <button type="button" className="mini" onClick={() => setSheet({ kind: 'event', item: null, day: selected })}>
               + 일정
             </button>
@@ -133,14 +127,14 @@ export default function Month({ setError }) {
             <button type="button" className="ev-line" key={ev.id} style={{ '--c': labelHex(ev.color) }} onClick={() => setSheet({ kind: 'event', item: ev, day: selected })}>
               <span className="ev-time">{timeText(ev.start_time) || '하루 종일'}</span>
               <strong>{ev.title}</strong>
-              {ev.repeat !== 'none' && <small>🔁</small>}
+              {ev.repeat !== 'none' && <small><Icon name="repeat" size={12} /></small>}
             </button>
           ))}
         </div>
 
         <div className="detail-sec">
           <div className="card-title">
-            <b>✅ 할 일</b>
+            <b><Icon name="today" size={16} /> 할 일</b>
             <button type="button" className="mini" onClick={() => setSheet({ kind: 'task', item: null, day: selected })}>
               + 할 일
             </button>
@@ -161,7 +155,7 @@ export default function Month({ setError }) {
 
         {selWorkouts.length > 0 && (
           <div className="detail-sec">
-            <b>🏃 운동</b>
+            <b><Icon name="workout" size={16} /> 운동</b>
             {selWorkouts.map((w) => (
               <p className="spent-line" key={w.id}>
                 <span>{w.kind}</span>
@@ -170,19 +164,6 @@ export default function Month({ setError }) {
             ))}
           </div>
         )}
-
-        <div className="detail-sec">
-          <b>💰 지출 {selSpent.length > 0 &&<small>({won(selSpent.reduce((s, e) => s + e.amount, 0))})</small>}</b>
-          {selSpent.length === 0 && <p className="plan-empty">쓴 돈이 없어요</p>}
-          {selSpent.map((e) => (
-            <p className="spent-line" key={e.id}>
-              <span>
-                {catOf(e.category).emoji} {e.place}
-              </span>
-              <b>{won(e.amount)}</b>
-            </p>
-          ))}
-        </div>
       </div>
 
       {sheet?.kind === 'event' && (

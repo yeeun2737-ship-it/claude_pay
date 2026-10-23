@@ -5,6 +5,7 @@ import { supabase } from './supabase';
 import { addDays, dayTitle, occursOn, todayStr } from './dates';
 import TaskRow from './task-row';
 import TaskSheet from './task-sheet';
+import Icon from './icons';
 
 // 오늘 탭: 오늘 할 일 체크리스트만 보여준다. 안 한 지난 할 일은 한 번에 오늘로 넘길 수 있다.
 export default function Today({ setError }) {
@@ -88,7 +89,7 @@ export default function Today({ setError }) {
           <div style={{ width: todays.length ? `${(doneCount / todays.length) * 100}%` : '0%' }} />
         </div>
         <small>
-          {todays.length === 0 ? '오늘 할 일이 아직 없어요' : `${doneCount} / ${todays.length} 완료${doneCount === todays.length ? ' 🎉' : ''}`}
+          {todays.length === 0 ? '오늘 할 일이 아직 없어요' : `${doneCount} / ${todays.length} 완료${doneCount === todays.length ? '' : ''}`}
         </small>
       </div>
 
@@ -116,7 +117,7 @@ export default function Today({ setError }) {
       )}
 
       <div className="card">
-        <h3>📝 오늘 할 일</h3>
+        <h3><Icon name="memo" size={20} /> 오늘 할 일</h3>
         {loaded && todays.length === 0 && <p className="plan-empty">오늘 할 일이 없어요. 아래에 적어 보세요</p>}
         <ul className="checklist">
           {todays.map((t) => (

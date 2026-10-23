@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from './supabase';
 import ItemFields from './item-fields';
+import Icon from './icons';
 
 // 일정 추가·수정 창. event가 없으면 새 일정.
 export default function EventSheet({ event, defaultDay, categories, onClose, onSaved, onDeleted, setError }) {
@@ -58,7 +59,7 @@ export default function EventSheet({ event, defaultDay, categories, onClose, onS
   return (
     <div className="overlay" onClick={onClose}>
       <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
-        <h2>{event ? '✏️ 일정 고치기' : '📌 일정 추가'}</h2>
+        <h2>{event ? <><Icon name="pencil" /> 일정 고치기</> : <><Icon name="pin" /> 일정 추가</>}</h2>
         <label>
           일정
           <input

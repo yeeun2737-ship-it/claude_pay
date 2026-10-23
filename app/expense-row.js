@@ -1,4 +1,5 @@
 import { catOf, currencyOf, perPerson, won } from './shared';
+import Icon from './icons';
 
 // 지출 한 줄. 내역 탭과 여행 상세에서 같이 쓴다.
 // tripLabel: 이름 옆에 보여줄 여행 표시(없으면 null), people: 연결된 여행의 인원 수
@@ -7,7 +8,7 @@ export default function ExpenseRow({ expense: e, tripLabel, people, onOpen }) {
   return (
     <li className="row" onClick={() => onOpen(e)}>
       <span className="chip" style={{ '--c': c.color }}>
-        {c.emoji} {c.name}
+        <Icon name={c.icon} size={14} /> {c.name}
       </span>
       <div className="info">
         <strong>{e.place}</strong>

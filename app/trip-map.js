@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { DAY_COLORS, MAP_OPTIONS, loadMaps, pinElement } from './google-maps';
+import Icon from './icons';
 
 // 위치가 있는 일정을 번호 핀으로 찍고, 같은 날짜끼리 방문 순서대로 선으로 잇는다.
 export default function TripMap({ days, items }) {
@@ -72,7 +73,7 @@ export default function TripMap({ days, items }) {
 
   return (
     <div className="trip-map">
-      <h3>🗺️ 지도</h3>
+      <h3><Icon name="map" size={20} /> 지도</h3>
       {days.length > 1 && (
         <div className="day-chips">
           <button className={day === 'all' ? 'chip-btn on' : 'chip-btn'} onClick={() => setDay('all')}>

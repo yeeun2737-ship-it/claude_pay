@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from './supabase';
 import { WEEKDAY_NAMES, daysInMonth, todayStr, weekday } from './dates';
 import { pad } from './shared';
+import Icon from './icons';
 
 const KINDS = ['러닝', '걷기', '요가', '헬스', '수영', '자전거', '필라테스', '홈트'];
 
@@ -39,7 +40,7 @@ function WorkoutSheet({ workout, defaultDay, onClose, onSaved, onDeleted, setErr
   return (
     <div className="overlay" onClick={onClose}>
       <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
-        <h2>{workout ? '✏️ 운동 고치기' : '🏃 운동 기록'}</h2>
+        <h2>{workout ? <><Icon name="pencil" /> 운동 고치기</> : <><Icon name="workout" /> 운동 기록</>}</h2>
         <label>
           날짜
           <input type="date" required value={form.day} onChange={(e) => setForm((f) => ({ ...f, day: e.target.value }))} />
@@ -230,9 +231,9 @@ export default function Workout({ setError }) {
           </button>
         </div>
         <div className="stat-pills">
-          <span>🏃 {workouts.length}회</span>
+          <span><Icon name="workout" size={14} /> {workouts.length}회</span>
           <span>⏱️ {minutesText(totalMinutes)}</span>
-          <span>📅 {workoutDays}일</span>
+          <span><Icon name="week" size={14} /> {workoutDays}일</span>
         </div>
         {!thisMonth && (
           <button type="button" className="mini" onClick={() => setYm({ y: Number(today.slice(0, 4)), m: Number(today.slice(5, 7)) })}>
@@ -243,7 +244,7 @@ export default function Workout({ setError }) {
 
       <div className="card">
         <div className="card-title">
-          <h3>🏃 운동 기록</h3>
+          <h3><Icon name="workout" size={20} /> 운동 기록</h3>
           <button type="button" className="mini" onClick={() => setSheet({ item: null })}>
             + 운동
           </button>
@@ -267,7 +268,7 @@ export default function Workout({ setError }) {
       </div>
 
       <div className="card">
-        <h3>✅ 습관 트래커</h3>
+        <h3><Icon name="today" size={20} /> 습관 트래커</h3>
         <div className="tracker-wrap" ref={trackerRef}>
           <table className="tracker">
             <thead>

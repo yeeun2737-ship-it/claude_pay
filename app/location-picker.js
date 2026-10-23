@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MAP_OPTIONS, loadMaps, pinElement } from './google-maps';
+import Icon from './icons';
 
 // 장소 이름으로 검색해서 위치를 고르고, 핀을 끌어서 위치를 다듬는다.
 // value: { lat, lng } 또는 null. onChange({ lat, lng, name? })
@@ -83,7 +84,7 @@ export default function LocationPicker({ query, value, onChange, onClear }) {
     <div className="picker">
       <div className="picker-row">
         <button type="button" className="picker-btn" onClick={search} disabled={searching}>
-          {searching ? '검색 중...' : '📍 위치 검색'}
+          {searching ? '검색 중...' : <><Icon name="pin" size={14} /> 위치 검색</>}
         </button>
         {value && (
           <button

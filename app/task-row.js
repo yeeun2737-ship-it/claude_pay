@@ -1,4 +1,5 @@
 import { labelHex } from './shared';
+import Icon from './icons';
 
 // 할 일 한 줄: 동그란 체크, 제목, 카테고리·반복 표시. 오늘·주간 탭에서 같이 쓴다.
 export default function TaskRow({ task, done, onToggle, onOpen, note }) {
@@ -17,7 +18,7 @@ export default function TaskRow({ task, done, onToggle, onOpen, note }) {
         <strong>{task.title}</strong>
         {(task.category || task.repeat !== 'none' || note) && (
           <small>
-            {task.repeat !== 'none' && '🔁 '}
+            {task.repeat !== 'none' && <><Icon name="repeat" size={12} /> </>}
             {[task.category, note].filter(Boolean).join(' · ')}
           </small>
         )}

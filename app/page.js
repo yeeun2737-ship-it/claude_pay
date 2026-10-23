@@ -10,16 +10,17 @@ import Week from './week';
 import Month from './month';
 import Workout from './workout';
 import Memo from './memo';
+import Icon from './icons';
 
 // 아래 책갈피 메뉴
 const PAGES = [
-  { id: 'today', emoji: '✅', label: '오늘', color: '#f0cfc9' },
-  { id: 'week', emoji: '📅', label: '주간', color: '#cfdde3' },
-  { id: 'month', emoji: '🗓️', label: '월간', color: '#cbdcc3' },
-  { id: 'workout', emoji: '🏃', label: '운동', color: '#f3deaa' },
-  { id: 'memo', emoji: '📝', label: '메모', color: '#ddd3e6' },
-  { id: 'ledger', emoji: '💰', label: '가계부', color: '#f4d9c3' },
-  { id: 'trips', emoji: '🧳', label: '여행', color: '#c6dcd6' },
+  { id: 'today', icon: 'today', label: '오늘', color: '#f0cfc9' },
+  { id: 'week', icon: 'week', label: '주간', color: '#cfdde3' },
+  { id: 'month', icon: 'month', label: '월간', color: '#cbdcc3' },
+  { id: 'workout', icon: 'workout', label: '운동', color: '#f3deaa' },
+  { id: 'memo', icon: 'memo', label: '메모', color: '#ddd3e6' },
+  { id: 'ledger', icon: 'ledger', label: '가계부', color: '#f4d9c3' },
+  { id: 'trips', icon: 'trips', label: '여행', color: '#c6dcd6' },
 ];
 
 // 그 날짜의 환율(1 외화 = ? 원). 주말·휴일은 서비스가 직전 영업일 값을 주고, 미래 날짜는 최신 환율을 쓴다.
@@ -157,7 +158,7 @@ export default function Home() {
       return;
     }
     if (authMode === 'signup' && !data.session) {
-      setAuthInfo('인증 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요 📬');
+      setAuthInfo('인증 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요 ');
     }
     setPassword('');
   }
@@ -189,11 +190,11 @@ export default function Home() {
       ].filter(Boolean);
       setScanNote(
         missing.length
-          ? `${missing.join(', ')}은(는) 못 읽었어요. 직접 입력해 주세요 ✍️`
-          : '다 읽었어요! 맞는지 확인하고 추가해 주세요 👀',
+          ? `${missing.join(', ')}은(는) 못 읽었어요. 직접 입력해 주세요 `
+          : '다 읽었어요! 맞는지 확인하고 추가해 주세요 ',
       );
     } catch (err) {
-      setScanNote(`영수증을 읽지 못했어요: ${err.message}. 직접 입력해 주세요 ✍️`);
+      setScanNote(`영수증을 읽지 못했어요: ${err.message}. 직접 입력해 주세요 `);
     } finally {
       setScanning(false);
     }
@@ -489,9 +490,9 @@ export default function Home() {
     <main className="app">
       <header className="topbar">
         <button className="top-btn" onClick={openPassword}>
-          🔑 비밀번호
+          <Icon name="key" size={14} /> 비밀번호
         </button>
-        <p className="brand">🌸 소소노트</p>
+        <p className="brand"><Icon name="flower" size={22} /> 소소노트</p>
         <button className="top-btn" onClick={logout}>
           로그아웃
         </button>
@@ -515,10 +516,10 @@ export default function Home() {
 
           <nav className="tabs">
             <button className={tab === 'list' ? 'tab on' : 'tab'} onClick={() => setTab('list')}>
-              📒 내역
+              <Icon name="book" size={16} /> 내역
             </button>
             <button className={tab === 'stats' ? 'tab on' : 'tab'} onClick={() => setTab('stats')}>
-              📊 통계
+              <Icon name="chart" size={16} /> 통계
             </button>
           </nav>
         </>
@@ -549,12 +550,12 @@ export default function Home() {
           </div>
           {byCategory.length === 0 ? (
             <div className="empty">
-              <p>📊</p>
+              <p><Icon name="chart" size={44} /></p>
               <p>이번 달 통계가 아직 없어요!</p>
             </div>
           ) : (
             <div className="chart-card">
-              <h3>🍩 카테고리별 비율</h3>
+              <h3><Icon name="donut" size={20} /> 카테고리별 비율</h3>
               <svg viewBox="0 0 100 100" className="donut" role="img" aria-label="카테고리별 지출 비율 도넛 차트">
                 <g transform="rotate(-90 50 50)">
                   {arcs.map((a) => (
@@ -584,7 +585,7 @@ export default function Home() {
           )}
           {monthExpenses.length > 0 && (
             <div className="chart-card">
-              <h3>📅 일별 지출</h3>
+              <h3><Icon name="week" size={20} /> 일별 지출</h3>
               <svg viewBox="0 0 310 130" className="daily" role="img" aria-label="일별 지출 막대 그래프">
                 {dailyTotals.map((v, i) => {
                   const w = 300 / daysInMonth;
@@ -624,7 +625,7 @@ export default function Home() {
                 <li key={c.name}>
                   <div className="bar-head">
                     <span>
-                      {c.emoji} {c.name} <small>{c.count}건</small>
+                      <Icon name={c.icon} size={14} /> {c.name} <small>{c.count}건</small>
                     </span>
                     <span>
                       {won(c.sum)} · {Math.round((c.sum / monthTotal) * 100)}%
@@ -646,12 +647,12 @@ export default function Home() {
       <section className="list" hidden={page !== 'ledger' || tab !== 'list'}>
         {groups.length === 0 && (
           <div className="empty">
-            <p>🫥</p>
+            <p><Icon name="book" size={44} /></p>
             <p>아직 쓴 돈이 없어요!</p>
             <p className="sub">아래 + 버튼으로 첫 지출을 적어봐요</p>
           </div>
         )}
-        {groups.length > 0 && <p className="hint">💡 항목을 누르면 고치거나 지울 수 있어요</p>}
+        {groups.length > 0 && <p className="hint">항목을 누르면 고치거나 지울 수 있어요</p>}
         {groups.map(([date, items]) => (
           <div className="day" key={date}>
             <div className="day-head">
@@ -663,7 +664,7 @@ export default function Home() {
                 <ExpenseRow
                   key={e.id}
                   expense={e}
-                  tripLabel={e.trip_id ? `🧳 ${tripName(e.trip_id) ?? ''}` : null}
+                  tripLabel={e.trip_id ? `${tripName(e.trip_id) ?? ''}` : null}
                   people={trips.find((t) => t.id === e.trip_id)?.people ?? 1}
                   onOpen={openEdit}
                 />
@@ -690,7 +691,7 @@ export default function Home() {
               window.scrollTo(0, 0);
             }}
           >
-            <span>{p.emoji}</span>
+            <span><Icon name={p.icon} size={21} /></span>
             <span>{p.label}</span>
           </button>
         ))}
@@ -699,12 +700,12 @@ export default function Home() {
       {open && (
         <div className="overlay" onClick={() => setOpen(false)}>
           <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-            <h2>{editingId === null ? '💸 지출 적기' : '✏️ 지출 고치기'}</h2>
+            <h2>{editingId === null ? <><Icon name="ledger" /> 지출 적기</> : <><Icon name="pencil" /> 지출 고치기</>}</h2>
 
             {editingId === null && (
               <label className="scan">
                 <input type="file" accept="image/*" hidden onChange={scanReceipt} disabled={scanning} />
-                <span className="scan-btn">{scanning ? '읽는 중... 🔍' : '📷 영수증으로 채우기'}</span>
+                <span className="scan-btn">{scanning ? '읽는 중...' : <><Icon name="camera" size={16} /> 영수증으로 채우기</>}</span>
                 {scanNote && <small className="scan-note">{scanNote}</small>}
               </label>
             )}
@@ -793,7 +794,7 @@ export default function Home() {
                     style={{ '--c': c.color }}
                     onClick={() => setForm({ ...form, category: c.name })}
                   >
-                    {c.emoji} {c.name}
+                    <Icon name={c.icon} size={14} /> {c.name}
                   </button>
                 ))}
               </div>
@@ -843,7 +844,7 @@ export default function Home() {
       {pwOpen && (
         <div className="overlay" onClick={() => setPwOpen(false)}>
           <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={changePassword}>
-            <h2>🔑 비밀번호 바꾸기</h2>
+            <h2><Icon name="key" /> 비밀번호 바꾸기</h2>
             {[
               ['current', '현재 비밀번호', 'current-password'],
               ['next', '새 비밀번호 (숫자 4자리)', 'new-password'],

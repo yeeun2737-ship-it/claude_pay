@@ -111,8 +111,22 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Gaegu', 'Go
   border-radius: 12px 12px 8px 8px;
   cursor: pointer;
 }
-.bm span:first-child { font-size: 19px; filter: saturate(0.7); }
-.bm.on { color: var(--ink); font-weight: 700; background: var(--c); border-color: var(--edge); }
+.bm span:first-child {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--c);
+  color: var(--ink);
+  transition: transform 0.15s;
+}
+.bm.on { color: var(--ink); font-weight: 700; }
+.bm.on span:first-child { transform: scale(1.12) rotate(-4deg); border: 1.3px solid var(--edge); box-shadow: 1px 2px 4px rgba(120, 95, 50, 0.25); }
+.bm.on::after { content: ''; width: 30px; height: 7px; margin-top: 1px; background: var(--c); opacity: 0.9; transform: rotate(-2deg); border-radius: 1px; }
+
+.ic { flex: none; vertical-align: -0.2em; }
+:is(.card h2, .card h3, .sheet h2, .week-nav h2) .ic { margin-right: 2px; vertical-align: -0.16em; }
 
 /* 종이 위에 그린 상자 */
 .card, .numbers div, .chart-card, .bars, .day ul, .trip-card, .trip-head, .plan-day, .trip-map {
@@ -197,7 +211,8 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Gaegu', 'Go
 .list[hidden] { display: none; }
 .list { margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .empty { text-align: center; padding: 36px 0; font-size: 16px; }
-.empty p:first-child { font-size: 40px; filter: saturate(0.7); }
+.empty p:first-child { color: var(--muted); }
+.empty p:first-child .ic { vertical-align: middle; }
 .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
 .day-head { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; padding: 0 6px 6px; }
@@ -414,7 +429,7 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Gaegu', 'Go
 .cal-more { font-size: 9px; color: var(--muted); padding-left: 2px; }
 .cal-sum { margin-top: auto; font-size: 9.5px; color: #a8625a; text-align: right; padding-right: 2px; }
 .cal-trip { display: block; font-style: normal; font-size: 8.5px; line-height: 1.3; background: var(--sky); border-radius: 2px; padding: 0 2px; min-height: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cal-wo { position: absolute; top: 1px; right: 2px; font-size: 11px; filter: saturate(0.7); }
+.cal-wo { position: absolute; top: 2px; right: 2px; color: var(--accent); line-height: 0; }
 .day-detail { gap: 12px; }
 .detail-sec { display: grid; gap: 6px; }
 .detail-sec > b, .card-title b { font-size: 15px; }

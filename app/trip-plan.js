@@ -13,6 +13,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { supabase } from './supabase';
 import LocationPicker from './location-picker';
 import TripMap from './trip-map';
+import Icon from './icons';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -47,7 +48,7 @@ function PlanItem({ item, order, onOpen }) {
       <div className="plan-body" onClick={() => onOpen(item)}>
         <strong>{item.place}</strong>
         <small>
-          {item.lat !== null && '📍 '}
+          {item.lat !== null && <><Icon name="pin" size={12} /> </>}
           {timeText(item.visit_time)}
           {item.note && ` · ${item.note}`}
         </small>
@@ -173,7 +174,7 @@ export default function TripPlan({ trip, setError }) {
   return (
     <div className="plan">
       <TripMap days={days} items={items} />
-      <h3>🗓️ 일정</h3>
+      <h3><Icon name="month" size={20} /> 일정</h3>
       {days.map((day, index) => {
         const list = itemsOf(day);
         return (
@@ -203,7 +204,7 @@ export default function TripPlan({ trip, setError }) {
       {sheet && (
         <div className="overlay" onClick={() => setSheet(null)}>
           <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
-            <h2>{sheet.id === null ? '📍 일정 추가' : '✏️ 일정 고치기'}</h2>
+            <h2>{sheet.id === null ? <><Icon name="pin" /> 일정 추가</> : <><Icon name="pencil" /> 일정 고치기</>}</h2>
             <label>
               날짜
               <select value={sheet.form.day} onChange={setField('day')}>

@@ -5,6 +5,7 @@ import { supabase } from './supabase';
 import { CURRENCIES, currencyOf, formatDate, perPerson, toDateStr, won } from './shared';
 import ExpenseRow from './expense-row';
 import TripPlan from './trip-plan';
+import Icon from './icons';
 
 const newTrip = () => ({
   name: '',
@@ -109,7 +110,7 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
           </button>
           {sorted.length === 0 && (
             <div className="empty">
-              <p>🧳</p>
+              <p><Icon name="suitcase" size={44} /></p>
               <p>아직 여행이 없어요!</p>
               <p className="sub">여행을 만들고 일정과 지출을 모아 보세요</p>
             </div>
@@ -122,7 +123,7 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
                   {t.is_active && <span className="badge">여행 모드 ON</span>}
                 </div>
                 <small>
-                  {periodText(t)} · {currencyOf(t.currency).symbol} {currencyOf(t.currency).label} · 👥 {t.people}명 ·{' '}
+                  {periodText(t)} · {currencyOf(t.currency).symbol} {currencyOf(t.currency).label} · <Icon name="people" size={14} /> {t.people}명 ·{' '}
                   {statusText(t)}
                 </small>
                 <span className="trip-total">
@@ -169,7 +170,7 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
           </div>
           <TripPlan trip={trip} setError={setError} />
           <div className="trip-spent">
-            <h3>🧾 지출 내역</h3>
+            <h3><Icon name="list" size={20} /> 지출 내역</h3>
             {spent(trip.id).length === 0 && (
               <p className="plan-empty">이 여행에 연결된 지출이 없어요. 여행 모드를 켜고 지출을 입력하면 자동으로 연결돼요</p>
             )}
@@ -193,7 +194,7 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
       {sheet && (
         <div className="overlay" onClick={() => setSheet(null)}>
           <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
-            <h2>{sheet.id === null ? '🧳 새 여행' : '✏️ 여행 고치기'}</h2>
+            <h2>{sheet.id === null ? <><Icon name="suitcase" /> 새 여행</> : <><Icon name="pencil" /> 여행 고치기</>}</h2>
             <label>
               여행 이름
               <input

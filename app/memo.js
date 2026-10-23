@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { monthDay } from './dates';
+import Icon from './icons';
 
 const TAPES = ['#f0cfc9', '#cfdde3', '#cbdcc3', '#f3deaa', '#ddd3e6', '#f4d9c3'];
 
@@ -46,7 +47,7 @@ function MemoSheet({ note, allTags, onClose, onSaved, onDeleted, setError }) {
   return (
     <div className="overlay" onClick={onClose}>
       <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
-        <h2>{note ? '✏️ 메모 고치기' : '📝 새 메모'}</h2>
+        <h2>{note ? <><Icon name="pencil" /> 메모 고치기</> : <><Icon name="memo" /> 새 메모</>}</h2>
         <label>
           제목
           <input type="text" required autoFocus maxLength={60} placeholder="예: 가고 싶은 맛집" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
@@ -126,7 +127,7 @@ export default function Memo({ setError }) {
             + 새 메모
           </button>
         </div>
-        <input type="search" className="memo-search" placeholder="🔍 제목·내용 검색" value={q} onChange={(e) => setQ(e.target.value)} aria-label="메모 검색" />
+        <input type="search" className="memo-search" placeholder="제목·내용 검색" value={q} onChange={(e) => setQ(e.target.value)} aria-label="메모 검색" />
         {allTags.length > 0 && (
           <div className="day-chips">
             <button type="button" className={tag === '' ? 'chip-btn on' : 'chip-btn'} onClick={() => setTag('')}>
@@ -143,7 +144,7 @@ export default function Memo({ setError }) {
 
       {loaded && notes.length === 0 && (
         <div className="empty">
-          <p>📝</p>
+          <p><Icon name="memo" size={44} /></p>
           <p>아직 메모가 없어요!</p>
           <p className="sub">위의 + 새 메모로 첫 메모를 적어 보세요</p>
         </div>

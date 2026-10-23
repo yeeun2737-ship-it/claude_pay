@@ -17,12 +17,12 @@ export const won = (n) => n.toLocaleString('ko-KR') + '원';
 export const perPerson = (amount, people) => Math.round(amount / people);
 
 export const CATEGORIES = [
-  { name: '식비', emoji: '🍙', color: '#f3deaa' },
-  { name: '카페', emoji: '☕', color: '#f0cfc9' },
-  { name: '교통', emoji: '🚌', color: '#cfdde3' },
-  { name: '쇼핑', emoji: '🛍️', color: '#ddd3e6' },
-  { name: '구독', emoji: '📺', color: '#cbdcc3' },
-  { name: '기타', emoji: '✨', color: '#f4d9c3' },
+  { name: '식비', icon: 'rice', color: '#f3deaa' },
+  { name: '카페', icon: 'coffee', color: '#f0cfc9' },
+  { name: '교통', icon: 'bus', color: '#cfdde3' },
+  { name: '쇼핑', icon: 'bag', color: '#ddd3e6' },
+  { name: '구독', icon: 'tv', color: '#cbdcc3' },
+  { name: '기타', icon: 'sparkle', color: '#f4d9c3' },
 ];
 
 export const catOf = (name) => CATEGORIES.find((c) => c.name === name) ?? CATEGORIES[5];

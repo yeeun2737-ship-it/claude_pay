@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from './supabase';
 import ItemFields from './item-fields';
+import Icon from './icons';
 
 // 할 일 추가·수정 창. task가 없으면 새 할 일.
 export default function TaskSheet({ task, defaultDay, categories, onClose, onSaved, onDeleted, setError }) {
@@ -56,7 +57,7 @@ export default function TaskSheet({ task, defaultDay, categories, onClose, onSav
   return (
     <div className="overlay" onClick={onClose}>
       <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
-        <h2>{task ? '✏️ 할 일 고치기' : '✅ 할 일 추가'}</h2>
+        <h2>{task ? <><Icon name="pencil" /> 할 일 고치기</> : <><Icon name="today" /> 할 일 추가</>}</h2>
         <label>
           할 일
           <input
