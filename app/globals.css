@@ -418,14 +418,15 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .month-head { --hl: var(--sage); background: color-mix(in srgb, var(--sage) 40%, var(--paper-2)); justify-items: center; text-align: center; }
 .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; border: 1.3px solid var(--edge); border-radius: var(--hand); overflow: hidden; background: rgba(255, 252, 244, 0.7); }
 .cal-dow { text-align: center; font-size: 12px; color: var(--muted); padding: 4px 0; border-bottom: 1.2px solid var(--line); background: color-mix(in srgb, var(--rose) 35%, var(--paper-2)); }
-.cal-dow.sun { color: #b5594f; }
+.cal-dow.red, .cal-num.red, .wd.red b, .wd.red span { color: #c0594f; }
+.cal-dow.sat, .cal-num.sat, .wd.sat b, .wd.sat span { color: #5f84ad; }
 .cal-cell { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 2px; min-height: 74px; padding: 3px 2px; font: inherit; text-align: left; color: var(--ink); background: transparent; border: none; border-right: 1px dotted var(--line); border-bottom: 1px dotted var(--line); cursor: pointer; overflow: hidden; }
 .cal-cell:nth-child(7n) { border-right: none; }
 .cal-cell.dim { opacity: 0.4; }
 .cal-cell.today { background: color-mix(in srgb, var(--rose) 35%, var(--paper-2)); }
 .cal-cell.sel { box-shadow: inset 0 0 0 2px var(--ink); }
 .cal-num { font-size: 12px; font-weight: 700; padding-left: 2px; }
-.cal-cell.today .cal-num { color: #b5594f; }
+.cal-cell.today .cal-num { text-decoration: underline; text-underline-offset: 2px; }
 .cal-ev { font-size: 9.5px; line-height: 1.25; background: color-mix(in srgb, var(--c) 80%, var(--paper-2)); border-radius: 3px; padding: 0 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cal-more { font-size: 9px; color: var(--muted); padding-left: 2px; }
 .cal-sum { margin-top: auto; font-size: 9.5px; color: #a8625a; text-align: right; padding-right: 2px; }
@@ -457,7 +458,10 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .tracker th, .tracker td { padding: 0; text-align: center; font-weight: 400; }
 .tday { vertical-align: top; font-size: 12px; color: var(--ink); line-height: 1.2; }
 .tday small { display: block; height: 12px; line-height: 12px; font-size: 10px; font-weight: 400; color: var(--muted); }
-.tday.today { color: #b5594f; font-weight: 700; }
+.tday .dn { display: inline-block; min-width: 20px; height: 18px; line-height: 18px; border-radius: 999px; }
+.tday.is-today .dn { background: var(--rose); }
+.tday.sat, .tday.sat small { color: #5f84ad; }
+.tday.red, .tday.red small { color: #c0594f; }
 .hname { width: 34%; text-align: left !important; font-size: 13px !important; white-space: nowrap; overflow: hidden; }
 .hname span { display: inline-block; max-width: calc(100% - 18px); overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
 .hname small { margin-left: 3px; color: var(--accent); font-size: 10px; }

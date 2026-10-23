@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { WEEKDAY_COLORS, WEEKDAY_EN, addDays, mondayOf, monthDay, occursOn, timeText, todayStr, weekday } from './dates';
+import { WEEKDAY_COLORS, WEEKDAY_EN, addDays, mondayOf, monthDay, isHoliday, occursOn, timeText, todayStr, weekday } from './dates';
 import { labelHex } from './shared';
 import { usePlanner } from './planner-data';
 import EventSheet from './event-sheet';
@@ -61,7 +61,7 @@ export default function Week({ setError }) {
           const empty = !bands.length && !dayItems.length && !dayTasks.length && !dayEvents.length;
           return (
             <li key={day} className={day === today ? 'week-row today' : 'week-row'}>
-              <div className="wd" style={{ '--c': WEEKDAY_COLORS[wd] }}>
+              <div className={['wd', wd === 6 && !isHoliday(day) && 'sat', (wd === 0 || isHoliday(day)) && 'red'].filter(Boolean).join(' ')} style={{ '--c': WEEKDAY_COLORS[wd] }}>
                 <span>{WEEKDAY_EN[wd]}</span>
                 <b>{Number(day.slice(8))}</b>
               </div>

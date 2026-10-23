@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
-import { WEEKDAY_NAMES, daysInMonth, todayStr, weekday } from './dates';
+import { WEEKDAY_NAMES, daysInMonth, isHoliday, todayStr, weekday } from './dates';
 import { pad } from './shared';
 import Icon from './icons';
 
@@ -285,9 +285,9 @@ export default function Workout({ setError }) {
               <tr>
                 <th className="hname" />
                 {shownDays.map((d) => (
-                  <th key={d} className={d === today ? 'tday today' : 'tday'}>
+                  <th key={d} className={['tday', d === today && 'is-today', weekday(d) === 6 && !isHoliday(d) && 'sat', (weekday(d) === 0 || isHoliday(d)) && 'red'].filter(Boolean).join(' ')}>
                     <small>{WEEKDAY_NAMES[weekday(d)]}</small>
-                    {Number(d.slice(8))}
+                    <span className="dn">{Number(d.slice(8))}</span>
                   </th>
                 ))}
               </tr>

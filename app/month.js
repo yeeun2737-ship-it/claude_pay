@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { WEEKDAY_NAMES, addDays, dayTitle, daysInMonth, occursOn, timeText, todayStr, weekday } from './dates';
+import { WEEKDAY_NAMES, addDays, dayTitle, daysInMonth, isHoliday, occursOn, timeText, todayStr, weekday } from './dates';
 import { labelHex, pad } from './shared';
 import { usePlanner } from './planner-data';
 import EventSheet from './event-sheet';
@@ -77,7 +77,7 @@ export default function Month({ setError }) {
 
       <div className="cal">
         {WEEKDAY_NAMES.map((n, i) => (
-          <span key={n} className={i === 0 ? 'cal-dow sun' : 'cal-dow'}>
+          <span key={n} className={i === 0 ? 'cal-dow red' : i === 6 ? 'cal-dow sat' : 'cal-dow'}>
             {n}
           </span>
         ))}
@@ -89,7 +89,7 @@ export default function Month({ setError }) {
             .join(' ');
           return (
             <button type="button" key={day} className={cls} onClick={() => setSelected(day)}>
-              <span className="cal-num">{Number(day.slice(8))}</span>
+              <span className={['cal-num', weekday(day) === 6 && !isHoliday(day) && 'sat', (weekday(day) === 0 || isHoliday(day)) && 'red'].filter(Boolean).join(' ')}>{Number(day.slice(8))}</span>
               {workoutDays.has(day) && <span className="cal-wo"><Icon name="workout" size={12} /></span>}
               {evs.slice(0, 2).map((ev) => (
                 <span className="cal-ev" key={ev.id} style={{ '--c': labelHex(ev.color) }}>
