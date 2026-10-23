@@ -38,9 +38,9 @@ export function formatDate(str) {
 export const LABEL_COLORS = [
   { id: 'pink', hex: '#efb9b1', name: '빨강', note: '기념일' },
   { id: 'blue', hex: '#bcd0e0', name: '파랑', note: '건강' },
-  { id: 'green', hex: '#c2d9b8', name: '초록', note: '여행' },
   { id: 'yellow', hex: '#f3deaa', name: '노랑', note: '돈' },
-  { id: 'purple', hex: '#d6c8e4', name: '보라', note: '개인' },
+  { id: 'purple', hex: '#d6c8e4', name: '보라', note: '기타' },
+  { id: 'green', hex: '#c2d9b8', name: '초록', note: '여행' },
   { id: 'sky', hex: '#b9dcd4', name: '민트', note: '회사' },
 ];
 
