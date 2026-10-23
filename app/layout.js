@@ -2,16 +2,16 @@ import './globals.css';
 import RegisterSW from './register-sw';
 
 export const metadata = {
-  title: '티끌모아 티끌',
+  title: '소소노트',
   description: '나만의 다이어리 플래너와 가계부',
   icons: { icon: '/pwa-icon/192', apple: '/pwa-icon/180' },
-  appleWebApp: { capable: true, title: '티끌모아', statusBarStyle: 'default' },
+  appleWebApp: { capable: true, title: '소소노트', statusBarStyle: 'default' },
 };
 
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#ffc9d6',
+  themeColor: '#f7f0e2',
 };
 
 export default function RootLayout({ children }) {

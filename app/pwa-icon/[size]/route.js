@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 const SIZES = [180, 192, 512];
-const INK = '#2b2250';
+const INK = '#4a4039';
 
 export async function GET(_request, { params }) {
   const size = Number((await params).size);
@@ -23,7 +23,7 @@ export async function GET(_request, { params }) {
 
   return new ImageResponse(
     (
-      <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', background: '#ff8fb1' }}>
+      <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', background: '#cbdcc3' }}>
         {/* 가계부 노트 */}
         <div
           style={{
@@ -51,7 +51,7 @@ export async function GET(_request, { params }) {
               top: u(0.07),
               width: u(0.34),
               height: u(0.07),
-              background: '#ffd23f',
+              background: '#f3deaa',
               border: `${Math.max(1, Math.round(border / 2))}px solid ${INK}`,
               borderRadius: u(0.02),
             }}
@@ -75,7 +75,7 @@ export async function GET(_request, { params }) {
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '50%',
-            background: '#ffd23f',
+            background: '#f3deaa',
             border: `${border}px solid ${INK}`,
             boxShadow: `${shadow}px ${shadow}px 0 ${INK}`,
           }}

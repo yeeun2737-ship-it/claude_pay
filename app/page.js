@@ -13,13 +13,13 @@ import Memo from './memo';
 
 // 아래 책갈피 메뉴
 const PAGES = [
-  { id: 'today', emoji: '✅', label: '오늘', color: '#ffc9d6' },
-  { id: 'week', emoji: '📅', label: '주간', color: '#cfe2ff' },
-  { id: 'month', emoji: '🗓️', label: '월간', color: '#d3efcf' },
-  { id: 'workout', emoji: '🏃', label: '운동', color: '#fff0b8' },
-  { id: 'memo', emoji: '📝', label: '메모', color: '#e3d8ff' },
-  { id: 'ledger', emoji: '💰', label: '가계부', color: '#ffdcc7' },
-  { id: 'trips', emoji: '🧳', label: '여행', color: '#cfeaf4' },
+  { id: 'today', emoji: '✅', label: '오늘', color: '#f0cfc9' },
+  { id: 'week', emoji: '📅', label: '주간', color: '#cfdde3' },
+  { id: 'month', emoji: '🗓️', label: '월간', color: '#cbdcc3' },
+  { id: 'workout', emoji: '🏃', label: '운동', color: '#f3deaa' },
+  { id: 'memo', emoji: '📝', label: '메모', color: '#ddd3e6' },
+  { id: 'ledger', emoji: '💰', label: '가계부', color: '#f4d9c3' },
+  { id: 'trips', emoji: '🧳', label: '여행', color: '#c6dcd6' },
 ];
 
 // 그 날짜의 환율(1 외화 = ? 원). 주말·휴일은 서비스가 직전 영업일 값을 주고, 미래 날짜는 최신 환율을 쓴다.
@@ -257,8 +257,8 @@ export default function Home() {
     return (
       <main className="app lock">
         <form className="hero" onSubmit={authenticate}>
-          <p className="brand">🐷 티끌모아 티끌</p>
-          <p className="label">{login ? '로그인하고 내 가계부를 열어요' : '이메일로 내 가계부를 만들어요'}</p>
+          <p className="brand">소소노트</p>
+          <p className="label">{login ? '로그인하고 내 다이어리를 열어요' : '이메일로 내 다이어리를 만들어요'}</p>
           <input
             className="auth-in"
             type="email"
@@ -491,7 +491,7 @@ export default function Home() {
         <button className="top-btn" onClick={openPassword}>
           🔑 비밀번호
         </button>
-        <p className="brand">🌸 티끌모아 티끌</p>
+        <p className="brand">🌸 소소노트</p>
         <button className="top-btn" onClick={logout}>
           로그아웃
         </button>
@@ -571,12 +571,12 @@ export default function Home() {
                     />
                   ))}
                 </g>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#5b4a52" strokeWidth="1.6" />
-                <circle cx="50" cy="50" r="27" fill="none" stroke="#5b4a52" strokeWidth="1.6" />
-                <text x="50" y="48" textAnchor="middle" fontSize="6" fill="#5b4a52">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#4a4039" strokeWidth="1.6" />
+                <circle cx="50" cy="50" r="27" fill="none" stroke="#4a4039" strokeWidth="1.6" />
+                <text x="50" y="48" textAnchor="middle" fontSize="6" fill="#4a4039">
                   총 지출
                 </text>
-                <text x="50" y="58" textAnchor="middle" fontSize="8.5" fontWeight="900" fill="#5b4a52">
+                <text x="50" y="58" textAnchor="middle" fontSize="8.5" fontWeight="900" fill="#4a4039">
                   {monthTotal.toLocaleString('ko-KR')}
                 </text>
               </svg>
@@ -598,21 +598,21 @@ export default function Home() {
                           width={w * 0.7}
                           height={h}
                           rx="1.5"
-                          fill={v === maxDaily ? '#ffe08a' : '#ffb3c6'}
-                          stroke="#5b4a52"
+                          fill={v === maxDaily ? '#dcbc6c' : '#e8c0b9'}
+                          stroke="#4a4039"
                           strokeWidth="1.2"
                         />
                       )}
                       {(i + 1 === 1 || (i + 1) % 5 === 0) && (
-                        <text x={5 + i * w + w / 2} y="121" textAnchor="middle" fontSize="8" fill="#5b4a52">
+                        <text x={5 + i * w + w / 2} y="121" textAnchor="middle" fontSize="8" fill="#4a4039">
                           {i + 1}
                         </text>
                       )}
                     </g>
                   );
                 })}
-                <line x1="5" y1="105" x2="305" y2="105" stroke="#5b4a52" strokeWidth="1.5" />
-                <text x="5" y="10" fontSize="8" fontWeight="700" fill="#5b4a52">
+                <line x1="5" y1="105" x2="305" y2="105" stroke="#4a4039" strokeWidth="1.5" />
+                <text x="5" y="10" fontSize="8" fontWeight="700" fill="#4a4039">
                   최대 {maxDaily.toLocaleString('ko-KR')}원
                 </text>
               </svg>
@@ -717,7 +717,7 @@ export default function Home() {
                     type="button"
                     key={c.code}
                     className={form.currency === c.code ? 'cat on' : 'cat'}
-                    style={{ '--c': '#ffe08a' }}
+                    style={{ '--c': '#f3deaa' }}
                     onClick={() => setCurrency(c.code)}
                   >
                     {c.symbol} {c.label}

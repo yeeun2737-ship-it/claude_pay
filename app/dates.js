@@ -36,7 +36,7 @@ export function dayTitle(day) {
 }
 
 // 요일별 파스텔 색(참고 이미지의 요일 라벨). 인덱스는 0=일 ~ 6=토
-export const WEEKDAY_COLORS = ['#ffc9d6', '#ffc9d6', '#cfe2ff', '#d3efcf', '#fff0b8', '#e3d8ff', '#cfeaf4'];
+export const WEEKDAY_COLORS = ['#f0cfc9', '#f0cfc9', '#cfdde3', '#cbdcc3', '#f3deaa', '#ddd3e6', '#cfdde3'];
 export const WEEKDAY_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 // '15:30:00' → '오후 3시 30분'

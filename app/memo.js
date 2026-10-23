@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { monthDay } from './dates';
 
-const TAPES = ['#ffc9d6', '#cfe2ff', '#d3efcf', '#fff0b8', '#e3d8ff', '#cfeaf4'];
+const TAPES = ['#f0cfc9', '#cfdde3', '#cbdcc3', '#f3deaa', '#ddd3e6', '#f4d9c3'];
 
 // '#맛집, 공부 여행' → ['맛집', '공부', '여행'] (중복 제거, 최대 10개, 20자까지)
 const parseTags = (text) => [
