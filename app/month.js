@@ -83,6 +83,7 @@ export default function Month({ setError }) {
         ))}
         {days.map((day) => {
           const evs = eventsOn(day);
+          const tks = P.tasks.filter((t) => occursOn(t, day));
           const bands = tripsOn(day);
           const cls = ['cal-cell', day === today && 'today', day === selected && 'sel', !day.startsWith(`${ym.y}-${pad(ym.m)}`) && 'dim']
             .filter(Boolean)
@@ -91,12 +92,14 @@ export default function Month({ setError }) {
             <button type="button" key={day} className={cls} onClick={() => setSelected(day)}>
               <span className={['cal-num', weekday(day) === 6 && !isHoliday(day) && 'sat', (weekday(day) === 0 || isHoliday(day)) && 'red'].filter(Boolean).join(' ')}>{Number(day.slice(8))}</span>
               {workoutDays.has(day) && <span className="cal-wo"><Icon name="workout" size={12} /></span>}
-              {evs.slice(0, 2).map((ev) => (
-                <span className="cal-ev" key={ev.id} style={{ '--c': labelHex(ev.color) }}>
-                  {ev.title}
-                </span>
-              ))}
-              {evs.length > 2 && <span className="cal-more">+{evs.length - 2}</span>}
+              {[...evs.map((ev) => ({ key: `e${ev.id}`, title: ev.title, color: ev.color })), ...tks.map((tk) => ({ key: `t${tk.id}`, title: tk.title, color: tk.color, task: true, done: P.isDone(tk, day) }))]
+                .slice(0, 3)
+                .map((x) => (
+                  <span className={x.task ? (x.done ? 'cal-ev cal-task done' : 'cal-ev cal-task') : 'cal-ev'} key={x.key} style={{ '--c': labelHex(x.color) }}>
+                    {x.title}
+                  </span>
+                ))}
+              {evs.length + tks.length > 3 && <span className="cal-more">+{evs.length + tks.length - 3}</span>}
               {bands.map((t) => (
                 <i className="cal-trip" key={t.id} title={t.name}>
                   {day === t.start_date || weekday(day) === 0 ? t.name : ''}

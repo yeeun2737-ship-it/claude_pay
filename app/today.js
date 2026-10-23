@@ -10,6 +10,8 @@ import Icon from './icons';
 // 오늘 탭: 오늘 할 일 체크리스트만 보여준다. 안 한 지난 할 일은 한 번에 오늘로 넘길 수 있다.
 export default function Today({ setError }) {
   const today = todayStr();
+  const [day, setDay] = useState(today);
+  const isToday = day === today;
   const [tasks, setTasks] = useState([]);
   const [checks, setChecks] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -19,7 +21,7 @@ export default function Today({ setError }) {
   useEffect(() => {
     Promise.all([
       supabase.from('tasks').select('*').order('created_at'),
-      supabase.from('task_checks').select('*').gte('day', addDays(today, -60)),
+      supabase.from('task_checks').select('*').gte('day', addDays(today, -180)),
     ]).then(([t, c]) => {
       if (t.error || c.error) setError('할 일을 불러오지 못했어요: ' + (t.error ?? c.error).message);
       else {
@@ -33,8 +35,8 @@ export default function Today({ setError }) {
   const doneSet = new Set(checks.map((c) => `${c.task_id}|${c.day}`));
   const isDone = (t, day) => doneSet.has(`${t.id}|${day}`);
 
-  const todays = tasks.filter((t) => occursOn(t, today));
-  const doneCount = todays.filter((t) => isDone(t, today)).length;
+  const todays = tasks.filter((t) => occursOn(t, day));
+  const doneCount = todays.filter((t) => isDone(t, day)).length;
   // 반복하지 않는 할 일 중 날짜가 지났는데 아직 체크 안 한 것
   const overdue = tasks.filter((t) => t.repeat === 'none' && t.day < today && !isDone(t, t.day)).sort((a, b) => (a.day < b.day ? -1 : 1));
   const categories = [...new Set(tasks.map((t) => t.category).filter(Boolean))];
@@ -64,7 +66,7 @@ export default function Today({ setError }) {
     e.preventDefault();
     const title = quick.trim();
     if (!title) return;
-    const { data, error } = await supabase.from('tasks').insert({ title, day: today }).select().single();
+    const { data, error } = await supabase.from('tasks').insert({ title, day }).select().single();
     if (error) return setError('할 일을 저장하지 못했어요: ' + error.message);
     setError('');
     setTasks([...tasks, data]);
@@ -84,14 +86,28 @@ export default function Today({ setError }) {
   return (
     <section className="today">
       <div className="card today-head">
-        <h2>
-          오늘 · <span className={isHoliday(today) || weekday(today) === 0 ? 'red' : weekday(today) === 6 ? 'sat' : undefined}>{dayTitle(today)}</span>
-        </h2>
-        <div className="progress" aria-label="오늘 진행률">
+        <div className="week-nav">
+          <button type="button" onClick={() => setDay(addDays(day, -1))} aria-label="전날">
+            ◀
+          </button>
+          <h2>
+            {isToday && '오늘 · '}
+            <span className={isHoliday(day) || weekday(day) === 0 ? 'red' : weekday(day) === 6 ? 'sat' : undefined}>{dayTitle(day)}</span>
+          </h2>
+          <button type="button" onClick={() => setDay(addDays(day, 1))} aria-label="다음날">
+            ▶
+          </button>
+        </div>
+        {!isToday && (
+          <button type="button" className="mini" onClick={() => setDay(today)}>
+            오늘로
+          </button>
+        )}
+        <div className="progress" aria-label="진행률">
           <div style={{ width: todays.length ? `${(doneCount / todays.length) * 100}%` : '0%' }} />
         </div>
         <small>
-          {todays.length === 0 ? '오늘 할 일이 아직 없어요' : `${doneCount} / ${todays.length} 완료${doneCount === todays.length ? '' : ''}`}
+          {todays.length === 0 ? `${isToday ? '오늘 ' : ''}할 일이 아직 없어요` : `${doneCount} / ${todays.length} 완료`}
         </small>
       </div>
 
@@ -119,15 +135,15 @@ export default function Today({ setError }) {
       )}
 
       <div className="card">
-        <h3><Icon name="memo" size={20} /> 오늘 할 일</h3>
-        {loaded && todays.length === 0 && <p className="plan-empty">오늘 할 일이 없어요. 아래에 적어 보세요</p>}
+        <h3><Icon name="memo" size={20} /> {isToday ? '오늘 할 일' : '할 일'}</h3>
+        {loaded && todays.length === 0 && <p className="plan-empty">{isToday ? '오늘 ' : ''}할 일이 없어요. 아래에 적어 보세요</p>}
         <ul className="checklist">
           {todays.map((t) => (
             <TaskRow
               key={t.id}
               task={t}
-              done={isDone(t, today)}
-              onToggle={() => toggle(t, today)}
+              done={isDone(t, day)}
+              onToggle={() => toggle(t, day)}
               onOpen={() => setSheet({ task: t })}
             />
           ))}
@@ -151,7 +167,7 @@ export default function Today({ setError }) {
       {sheet && (
         <TaskSheet
           task={sheet.task}
-          defaultDay={today}
+          defaultDay={day}
           categories={categories}
           onClose={() => setSheet(null)}
           onSaved={onSaved}
