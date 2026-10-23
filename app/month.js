@@ -7,7 +7,6 @@ import { usePlanner } from './planner-data';
 import EventSheet from './event-sheet';
 import TaskRow from './task-row';
 import TaskSheet from './task-sheet';
-import { minutesText } from './workout';
 import Icon from './icons';
 
 // 월간 달력: 날짜 칸에 일정, 여행 기간 띠를 보여주고 날짜를 누르면 그날을 자세히 본다.
@@ -40,7 +39,6 @@ export default function Month({ setError }) {
   const close = () => setSheet(null);
 
   const workoutDays = new Set(P.workouts.map((w) => w.day));
-  const selWorkouts = P.workouts.filter((w) => w.day === selected);
   const selEvents = eventsOn(selected);
   const selTasks = P.tasks.filter((t) => occursOn(t, selected));
 
@@ -155,18 +153,6 @@ export default function Month({ setError }) {
             ))}
           </ul>
         </div>
-
-        {selWorkouts.length > 0 && (
-          <div className="detail-sec">
-            <b><Icon name="workout" size={16} /> 운동</b>
-            {selWorkouts.map((w) => (
-              <p className="spent-line" key={w.id}>
-                <span>{w.kind}</span>
-                <b>{minutesText(w.minutes)}</b>
-              </p>
-            ))}
-          </div>
-        )}
       </div>
 
       {sheet?.kind === 'event' && (

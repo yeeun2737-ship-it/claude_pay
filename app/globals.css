@@ -365,7 +365,9 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .card-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card small { font-size: 12px; color: var(--muted); }
 .mini { font: inherit; font-size: 12px; color: var(--ink); background: var(--mustard); border: 1.2px solid var(--edge); border-radius: 6px; padding: 3px 11px; cursor: pointer; }
-.colors { display: flex; gap: 10px; }
+.colors { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.color-pick { display: grid; justify-items: center; gap: 3px; font: inherit; color: var(--ink); background: none; border: none; cursor: pointer; padding: 0; }
+.color-pick small { font-size: 11px; font-weight: 400; }
 .swatch { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--paper-2); box-shadow: 0 0 0 1.2px var(--line); cursor: pointer; }
 .swatch.on { box-shadow: 0 0 0 2px var(--ink); }
 
@@ -433,7 +435,7 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .cal-task.done { text-decoration: line-through; opacity: 0.6; }
 .cal-more { font-size: 9px; color: var(--muted); padding-left: 2px; }
 .cal-sum { margin-top: auto; font-size: 9.5px; color: #a8625a; text-align: right; padding-right: 2px; }
-.cal-trip { display: block; font-style: normal; font-size: 8.5px; line-height: 1.3; background: var(--sky); border-radius: 2px; padding: 0 2px; min-height: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-trip { display: block; font-style: normal; font-size: 8.5px; line-height: 1.3; background: var(--sage); border-radius: 2px; padding: 0 2px; min-height: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cal-wo { position: absolute; top: 2px; right: 2px; color: var(--accent); line-height: 0; }
 .day-detail { gap: 12px; }
 .detail-sec { display: grid; gap: 6px; }
@@ -443,7 +445,7 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 /* 운동 탭 */
 .workout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .workout-head { --hl: var(--mustard); background: color-mix(in srgb, var(--mustard) 40%, var(--paper-2)); justify-items: center; text-align: center; }
-.stat-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.stat-pills { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
 .stat-pills span { background: var(--paper-2); border: 1.2px solid var(--line); border-radius: 6px; padding: 2px 11px; font-size: 13px; font-weight: 700; }
 .wo-day { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 8px; align-items: start; padding: 6px 0; border-top: 1.2px dotted var(--line); }
 .wo-date { font-size: 13px; color: var(--muted); padding-top: 6px; }
@@ -468,7 +470,7 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .hname { width: 34%; text-align: left !important; font-size: 13px !important; white-space: nowrap; overflow: hidden; }
 .hname span { display: inline-block; max-width: calc(100% - 18px); overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
 .hname small { margin-left: 3px; color: var(--accent); font-size: 10px; }
-.hname button { font: inherit; font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; vertical-align: middle; }
+.hname button { font: inherit; font-size: 11px; color: var(--muted); background: none; border: none; padding: 6px 4px; cursor: pointer; vertical-align: middle; }
 .tcell { width: 21px; height: 21px; border-radius: 50%; background: transparent; border: 1px solid var(--line); cursor: pointer; }
 .tracker tbody tr .tcell.on { background: var(--rose-d); border-color: transparent; }
 .tracker tbody tr:nth-child(4n+2) .tcell.on { background: var(--sage-d); }
@@ -559,3 +561,41 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .memo-card p { font-size: 13px; line-height: 1.4; -webkit-line-clamp: 4; color: rgba(74, 64, 57, 0.85); }
 .memo-foot { margin-top: auto; }
 .memo-foot i { background: rgba(255, 255, 255, 0.55); }
+
+/* 오늘 탭 일정 시간표 */
+.tt-allday { display: grid; gap: 4px; }
+.tt { position: relative; display: grid; border-top: 1.2px solid var(--edge); border-bottom: 1.2px solid var(--edge); }
+.tt-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); }
+.tt-row + .tt-row { border-top: 1px dotted var(--line); }
+.tt-h { font-family: 'Nunito', sans-serif; font-size: 11px; color: var(--muted); text-align: right; padding: 4px 8px 0 0; border-right: 1.2px solid var(--line); }
+.tt-slot { cursor: pointer; }
+.tt-events { position: absolute; top: 0; bottom: 0; left: 40px; right: 0; pointer-events: none; }
+.tt-block { position: absolute; pointer-events: auto; flex-direction: column; align-items: flex-start; gap: 0; width: auto; overflow: hidden; padding: 3px 7px; }
+.tt-block strong { width: 100%; font-size: 14px; line-height: 1.25; }
+.time-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.time-pair input:disabled { opacity: 0.5; }
+
+/* 내 기록(체중·수면 등 직접 만든 종류) */
+.rec-type { display: grid; gap: 6px; padding-top: 8px; border-top: 1.2px dotted var(--line); }
+.rec-name { font: inherit; font-size: 17px; font-weight: 700; color: var(--ink); background: none; border: none; padding: 0; text-align: left; cursor: pointer; }
+.rec-name small { font-weight: 400; color: var(--muted); font-size: 12px; }
+.rec-row { display: grid; grid-template-columns: 78px minmax(0, 1fr) auto; align-items: center; gap: 8px; font: inherit; text-align: left; color: var(--ink); background: color-mix(in srgb, var(--sky) 35%, var(--paper-2)); border: none; border-radius: 4px 10px 10px 4px; padding: 6px 10px; cursor: pointer; }
+.rec-row .wo-date { padding-top: 0; }
+.rec-memo { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.unit-btn { font: inherit; font-size: 12px; color: var(--muted); background: none; border: 1.2px dashed var(--line); border-radius: 6px; padding: 2px 10px; cursor: pointer; }
+.habit-del { justify-self: end; display: inline-flex; align-items: center; gap: 3px; font: inherit; font-size: 12px; color: #b5594f; background: none; border: none; padding: 4px 2px; cursor: pointer; }
+
+/* 삭제 확인 창 */
+.overlay.confirm-overlay { z-index: 30; align-items: center; padding: 18px; }
+.sheet.confirm-sheet { max-width: 340px; border-radius: 16px; border: 1.3px solid var(--edge); padding: 22px 18px 18px; text-align: center; }
+.confirm-sheet p { font-size: 16px; line-height: 1.5; white-space: pre-line; }
+
+/* 주간 플래너: 할 일 체크칸을 작게 */
+.week-row .check { width: 19px; height: 19px; font-size: 11px; }
+.week-row .task { gap: 8px; padding: 3px 2px; }
+.week-row .task-body strong { font-size: 15px; }
+
+.time-input { display: flex; align-items: center; gap: 4px; }
+.time-input select { flex: 1; min-width: 0; }
+.time-input span { font-weight: 700; }
+.time-warn { font-size: 12px; color: #b5594f; }

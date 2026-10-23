@@ -6,6 +6,7 @@ import { CURRENCIES, currencyOf, formatDate, perPerson, toDateStr, won } from '.
 import ExpenseRow from './expense-row';
 import TripPlan from './trip-plan';
 import Icon from './icons';
+import { askConfirm } from './confirm';
 
 const newTrip = () => ({
   name: '',
@@ -67,7 +68,7 @@ export default function TripsView({ trips, setTrips, expenses, setExpenses, setE
   }
 
   async function remove() {
-    if (!window.confirm(`'${trip.name}' 여행을 삭제할까요?\n여행에 묶인 지출은 남고, 여행과의 연결만 풀려요.`)) return;
+    if (!(await askConfirm(`'${trip.name}' 여행을 삭제할까요?\n여행에 묶인 지출은 남고, 여행과의 연결만 풀려요.`))) return;
     const { error } = await supabase.from('trips').delete().eq('id', trip.id);
     if (error) {
       setError('여행을 삭제하지 못했어요: ' + error.message);

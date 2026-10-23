@@ -9,14 +9,10 @@ export default function ItemFields({ form, setForm, categories }) {
         색 라벨
         <div className="colors">
           {LABEL_COLORS.map((c) => (
-            <button
-              type="button"
-              key={c.id}
-              className={form.color === c.id ? 'swatch on' : 'swatch'}
-              style={{ background: c.hex }}
-              aria-label={c.name}
-              onClick={() => setForm((f) => ({ ...f, color: c.id }))}
-            />
+            <button type="button" key={c.id} className="color-pick" aria-label={`${c.name} ${c.note}`} onClick={() => setForm((f) => ({ ...f, color: c.id }))}>
+              <span className={form.color === c.id ? 'swatch on' : 'swatch'} style={{ background: c.hex }} />
+              <small>{c.note}</small>
+            </button>
           ))}
         </div>
       </div>

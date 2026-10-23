@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { monthDay } from './dates';
 import Icon from './icons';
+import { askConfirm } from './confirm';
 
 // 포스트잇 색(메모 번호로 정해서 DB에 따로 저장하지 않는다)
 const PAPERS = ['#fbeea8', '#f6d2cb', '#d3e4cb', '#cfe0e8', '#e3d9ec', '#f8dfc4'];
@@ -39,7 +40,7 @@ function MemoSheet({ note, allTags, onClose, onSaved, onDeleted, setError }) {
   }
 
   async function remove() {
-    if (!window.confirm('이 메모를 삭제할까요?')) return;
+    if (!(await askConfirm('이 메모를 삭제할까요?'))) return;
     const { error } = await supabase.from('notes').delete().eq('id', note.id);
     if (error) return setError('메모를 삭제하지 못했어요: ' + error.message);
     setError('');

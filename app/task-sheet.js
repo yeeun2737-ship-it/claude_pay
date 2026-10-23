@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from './supabase';
 import ItemFields from './item-fields';
 import Icon from './icons';
+import { askConfirm } from './confirm';
 
 // 할 일 추가·수정 창. task가 없으면 새 할 일.
 export default function TaskSheet({ task, defaultDay, categories, onClose, onSaved, onDeleted, setError }) {
@@ -44,7 +45,7 @@ export default function TaskSheet({ task, defaultDay, categories, onClose, onSav
   }
 
   async function remove() {
-    if (!window.confirm('이 할 일을 삭제할까요?' + (task.repeat !== 'none' ? '\n반복되는 모든 날짜에서 사라져요.' : ''))) return;
+    if (!(await askConfirm('이 할 일을 삭제할까요?' + (task.repeat !== 'none' ? '\n반복되는 모든 날짜에서 사라져요.' : '')))) return;
     const { error } = await supabase.from('tasks').delete().eq('id', task.id);
     if (error) {
       setError('할 일을 삭제하지 못했어요: ' + error.message);

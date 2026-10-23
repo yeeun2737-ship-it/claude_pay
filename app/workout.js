@@ -5,13 +5,15 @@ import { supabase } from './supabase';
 import { WEEKDAY_NAMES, daysInMonth, isHoliday, todayStr, weekday } from './dates';
 import { pad } from './shared';
 import Icon from './icons';
+import Records from './records';
+import { askConfirm } from './confirm';
 
-const KINDS = ['러닝', '걷기', '요가', '헬스', '수영', '자전거', '필라테스', '홈트'];
+const KINDS = ['러닝', '걷기', '요가', '헬스', '수영', '자전거', '필라테스', '홈트', '등산', '댄스'];
 
 // 75분 → '1시간 15분'
 export const minutesText = (min) => (min >= 60 ? `${Math.floor(min / 60)}시간${min % 60 ? ` ${min % 60}분` : ''}` : `${min}분`);
 
-function WorkoutSheet({ workout, defaultDay, onClose, onSaved, onDeleted, setError }) {
+function WorkoutSheet({ workout, defaultDay, kinds, onClose, onSaved, onDeleted, setError }) {
   const [form, setForm] = useState(
     workout ? { day: workout.day, kind: workout.kind, minutes: String(workout.minutes) } : { day: defaultDay, kind: '', minutes: '30' },
   );
@@ -30,7 +32,7 @@ function WorkoutSheet({ workout, defaultDay, onClose, onSaved, onDeleted, setErr
   }
 
   async function remove() {
-    if (!window.confirm('이 운동 기록을 삭제할까요?')) return;
+    if (!(await askConfirm('이 운동 기록을 삭제할까요?'))) return;
     const { error } = await supabase.from('workouts').delete().eq('id', workout.id);
     if (error) return setError('운동 기록을 삭제하지 못했어요: ' + error.message);
     setError('');
@@ -48,7 +50,7 @@ function WorkoutSheet({ workout, defaultDay, onClose, onSaved, onDeleted, setErr
         <div className="field">
           운동 종류
           <div className="kinds">
-            {KINDS.map((k) => (
+            {kinds.map((k) => (
               <button type="button" key={k} className={form.kind === k ? 'kind on' : 'kind'} onClick={() => setForm((f) => ({ ...f, kind: k }))}>
                 {k}
               </button>
@@ -58,7 +60,7 @@ function WorkoutSheet({ workout, defaultDay, onClose, onSaved, onDeleted, setErr
             type="text"
             required
             maxLength={20}
-            placeholder="직접 입력해도 돼요 (예: 등산)"
+            placeholder="직접 입력 (다음부터 목록에 남아요)"
             value={form.kind}
             onChange={(e) => setForm((f) => ({ ...f, kind: e.target.value }))}
           />
@@ -93,7 +95,7 @@ function WorkoutSheet({ workout, defaultDay, onClose, onSaved, onDeleted, setErr
   );
 }
 
-// 운동 탭: 이번 달 운동 통계, 운동 기록(종류+시간), 습관 트래커(날짜×습관 체크표)
+// 습관 탭: 습관 트래커(날짜×습관 체크표), 이번 달 운동 통계와 운동 기록(종류+시간)
 export default function Workout({ setError }) {
   const today = todayStr();
   const [ym, setYm] = useState({ y: Number(today.slice(0, 4)), m: Number(today.slice(5, 7)) });
@@ -102,6 +104,8 @@ export default function Workout({ setError }) {
   const [checks, setChecks] = useState([]);
   const [sheet, setSheet] = useState(null); // { item }
   const [newHabit, setNewHabit] = useState('');
+  const [confirmHabit, setConfirmHabit] = useState(null); // 삭제 확인 중인 습관
+  const [usedKinds, setUsedKinds] = useState([]); // 예전에 직접 입력해서 쓴 운동 종류
 
   const total = daysInMonth(ym.y, ym.m);
   const first = `${ym.y}-${pad(ym.m)}-01`;
@@ -109,17 +113,22 @@ export default function Workout({ setError }) {
   const days = Array.from({ length: total }, (_, i) => `${ym.y}-${pad(ym.m)}-${pad(i + 1)}`);
   const inMonth = (day) => day >= first && day <= last;
 
-  // 습관 목록은 한 번만 불러온다. 하나도 없으면 기본 습관 "운동"을 만든다.
+  // 습관 목록은 한 번만 불러온다. "운동" 습관이 있어야 운동 기록 카드가 보인다.
   useEffect(() => {
     (async () => {
-      let { data, error } = await supabase.from('habits').select('*').order('position').order('id');
+      const { data, error } = await supabase.from('habits').select('*').order('position').order('id');
       if (error) return setError('습관을 불러오지 못했어요: ' + error.message);
-      if (data.length === 0) {
-        const made = await supabase.from('habits').insert({ name: '운동', position: 0 }).select();
-        data = made.error ? (await supabase.from('habits').select('*').order('position').order('id')).data ?? [] : made.data;
-      }
       setHabits(data.filter((h, i, arr) => arr.findIndex((x) => x.name === h.name) === i));
     })();
+  }, []);
+
+  useEffect(() => {
+    supabase
+      .from('workouts')
+      .select('kind')
+      .order('id', { ascending: false })
+      .limit(300)
+      .then(({ data }) => data && setUsedKinds([...new Set(data.map((w) => w.kind))]));
   }, []);
 
   useEffect(() => {
@@ -189,10 +198,16 @@ export default function Workout({ setError }) {
     setNewHabit('');
   }
 
+  // 확인은 브라우저 confirm 대신 앱 안의 창으로 받는다(일부 화면에서는 confirm 창이 뜨지 않는다)
   async function removeHabit(habit) {
-    if (!window.confirm(`'${habit.name}' 습관을 삭제할까요?\n지금까지의 체크 기록도 함께 사라져요.`)) return;
+    setConfirmHabit(null);
     const { error } = await supabase.from('habits').delete().eq('id', habit.id);
     if (error) return setError('습관을 삭제하지 못했어요: ' + error.message);
+    await supabase.from('record_types').delete().eq('name', habit.name);
+    if (habit.name === '운동') {
+      await supabase.from('workouts').delete().gt('id', 0);
+      setWorkouts([]);
+    }
     setError('');
     setHabits((hs) => hs.filter((h) => h.id !== habit.id));
     setChecks((cs) => cs.filter((c) => c.habit_id !== habit.id));
@@ -206,10 +221,13 @@ export default function Workout({ setError }) {
     });
     setSheet(null);
     const habit = habits.find((h) => h.name === '운동');
-    if (habit && dayChanged) {
-      const { data, error } = await supabase.from('habit_checks').upsert({ habit_id: habit.id, day: saved.day }, { onConflict: 'habit_id,day' }).select().single();
-      if (!error && inMonth(saved.day)) setChecks((cs) => (cs.some((c) => c.habit_id === habit.id && c.day === saved.day) ? cs : [...cs, data]));
-    }
+    if (habit && dayChanged) checkHabit(habit, saved.day);
+  }
+
+  // 기록을 적은 날은 그 습관을 자동으로 체크한다
+  async function checkHabit(habit, day) {
+    const { data, error } = await supabase.from('habit_checks').upsert({ habit_id: habit.id, day }, { onConflict: 'habit_id,day' }).select().single();
+    if (!error && inMonth(day)) setChecks((cs) => (cs.some((c) => c.habit_id === habit.id && c.day === day) ? cs : [...cs, data]));
   }
 
   return (
@@ -220,7 +238,7 @@ export default function Workout({ setError }) {
             ◀
           </button>
           <div>
-            <h2>운동 기록</h2>
+            <h2>습관 기록</h2>
             <span className="range-pill">
               {ym.y}년 {ym.m}월
             </span>
@@ -229,41 +247,11 @@ export default function Workout({ setError }) {
             ▶
           </button>
         </div>
-        <div className="stat-pills">
-          <span><Icon name="workout" size={14} /> {workouts.length}회</span>
-          <span>⏱️ {minutesText(totalMinutes)}</span>
-          <span><Icon name="week" size={14} /> {workoutDays}일</span>
-        </div>
         {!thisMonth && (
           <button type="button" className="mini" onClick={() => setYm({ y: Number(today.slice(0, 4)), m: Number(today.slice(5, 7)) })}>
             이번 달로
           </button>
         )}
-      </div>
-
-      <div className="card">
-        <div className="card-title">
-          <h3><Icon name="workout" size={20} /> 운동 기록</h3>
-          <button type="button" className="mini" onClick={() => setSheet({ item: null })}>
-            + 운동
-          </button>
-        </div>
-        {workouts.length === 0 && <p className="plan-empty">이 달에는 운동 기록이 없어요. 오늘부터 시작해 볼까요?</p>}
-        {byDay.map(([day, list]) => (
-          <div className="wo-day" key={day}>
-            <span className="wo-date">
-              {Number(day.slice(5, 7))}/{Number(day.slice(8))} ({WEEKDAY_NAMES[weekday(day)]})
-            </span>
-            <div className="wo-list">
-              {list.map((w) => (
-                <button type="button" className="wo-item" key={w.id} onClick={() => setSheet({ item: w })}>
-                  <strong>{w.kind}</strong>
-                  <span>{minutesText(w.minutes)}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
       </div>
 
       <div className="card">
@@ -300,8 +288,8 @@ export default function Workout({ setError }) {
                       {h.name}
                       <small>{days.filter((d) => checked(h, d)).length}</small>
                     </span>
-                    <button type="button" aria-label={`${h.name} 삭제`} onClick={() => removeHabit(h)}>
-                      ✕
+                    <button type="button" aria-label={`${h.name} 삭제`} onClick={() => setConfirmHabit(h)}>
+                      <Icon name="close" size={13} />
                     </button>
                   </th>
                   {shownDays.map((d) => (
@@ -320,9 +308,68 @@ export default function Workout({ setError }) {
         </form>
       </div>
 
+      {habits.some((h) => h.name === '운동') && (
+      <div className="card">
+        <div className="card-title">
+          <h3><Icon name="workout" size={20} /> 운동 기록</h3>
+          <button type="button" className="mini" onClick={() => setSheet({ item: null })}>
+            + 운동
+          </button>
+        </div>
+        <div className="stat-pills">
+          <span><Icon name="workout" size={14} /> {workouts.length}회</span>
+          <span>⏱️ {minutesText(totalMinutes)}</span>
+          <span><Icon name="week" size={14} /> {workoutDays}일</span>
+        </div>
+        {workouts.length === 0 && <p className="plan-empty">이 달에는 운동 기록이 없어요. 오늘부터 시작해 볼까요?</p>}
+        {byDay.map(([day, list]) => (
+          <div className="wo-day" key={day}>
+            <span className="wo-date">
+              {Number(day.slice(5, 7))}/{Number(day.slice(8))} ({WEEKDAY_NAMES[weekday(day)]})
+            </span>
+            <div className="wo-list">
+              {list.map((w) => (
+                <button type="button" className="wo-item" key={w.id} onClick={() => setSheet({ item: w })}>
+                  <strong>{w.kind}</strong>
+                  <span>{minutesText(w.minutes)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+        <button type="button" className="habit-del" onClick={() => setConfirmHabit(habits.find((h) => h.name === '운동'))}>
+          <Icon name="close" size={12} /> 습관 삭제
+        </button>
+      </div>
+      )}
+
+      <Records habits={habits} first={first} last={last} setError={setError} onRecorded={checkHabit} onRemoveHabit={setConfirmHabit} />
+
+      {confirmHabit && (
+        <div className="overlay" onClick={() => setConfirmHabit(null)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <h2><Icon name="close" /> 습관 삭제</h2>
+            <p>
+              '{confirmHabit.name}' 습관을 삭제할까요?
+              <br />
+              지금까지의 체크와 {confirmHabit.name} 기록 카드도 함께 사라져요.
+            </p>
+            <div className="actions">
+              <button type="button" className="ghost" onClick={() => setConfirmHabit(null)}>
+                취소
+              </button>
+              <button type="button" className="danger" onClick={() => removeHabit(confirmHabit)}>
+                삭제하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {sheet && (
         <WorkoutSheet
           workout={sheet.item}
+          kinds={[...new Set([...KINDS, ...usedKinds, ...workouts.map((w) => w.kind)])]}
           defaultDay={inMonth(today) ? today : first}
           onClose={() => setSheet(null)}
           onSaved={onSaved}

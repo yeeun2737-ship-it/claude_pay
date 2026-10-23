@@ -25,6 +25,8 @@ export function occursOn(item, day) {
   if (item.repeat === 'daily') return true;
   if (item.repeat === 'weekly') return weekday(day) === weekday(item.day);
   const [y, m, d] = day.split('-').map(Number);
+  // 매년: 같은 월·일(2월 29일은 평년에 28일로), 매월: 같은 일(말일 넘으면 말일로)
+  if (item.repeat === 'yearly' && m !== Number(item.day.slice(5, 7))) return false;
   return d === Math.min(Number(item.day.slice(8)), daysInMonth(y, m));
 }
 
@@ -39,12 +41,8 @@ export function dayTitle(day) {
 export const WEEKDAY_COLORS = ['#f0cfc9', '#f0cfc9', '#cfdde3', '#cbdcc3', '#f3deaa', '#ddd3e6', '#cfdde3'];
 export const WEEKDAY_EN = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-// '15:30:00' → '오후 3시 30분'
-export function timeText(t) {
-  if (!t) return '';
-  const [h, m] = t.split(':').map(Number);
-  return `${h < 12 ? '오전' : '오후'} ${h % 12 === 0 ? 12 : h % 12}시${m ? ` ${m}분` : ''}`;
-}
+// '15:30:00' → '15:30' (24시간제)
+export const timeText = (t) => (t ? t.slice(0, 5) : '');
 
 export const monthDay = (day) => `${Number(day.slice(5, 7))}월 ${Number(day.slice(8))}일`;
 

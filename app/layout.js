@@ -1,5 +1,6 @@
 import './globals.css';
 import RegisterSW from './register-sw';
+import ConfirmHost from './confirm';
 
 export const metadata = {
   title: '소소노트',
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
       <body>
         {children}
         <RegisterSW />
+        <ConfirmHost />
       </body>
     </html>
   );

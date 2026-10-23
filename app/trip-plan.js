@@ -14,6 +14,8 @@ import { supabase } from './supabase';
 import LocationPicker from './location-picker';
 import TripMap from './trip-map';
 import Icon from './icons';
+import { askConfirm } from './confirm';
+import TimeInput from './time-input';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -137,7 +139,7 @@ export default function TripPlan({ trip, setError }) {
   }
 
   async function remove() {
-    if (!window.confirm('이 일정을 삭제할까요?')) return;
+    if (!(await askConfirm('이 일정을 삭제할까요?'))) return;
     const { error } = await supabase.from('trip_items').delete().eq('id', sheet.id);
     if (error) {
       setError('일정을 삭제하지 못했어요: ' + error.message);
@@ -234,10 +236,10 @@ export default function TripPlan({ trip, setError }) {
               }
               onClear={() => setSheet((s) => ({ ...s, form: { ...s.form, lat: null, lng: null } }))}
             />
-            <label>
+            <div className="field">
               방문 시각 (선택)
-              <input type="time" value={sheet.form.visit_time} onChange={setField('visit_time')} />
-            </label>
+              <TimeInput label="방문 시각" value={sheet.form.visit_time} onChange={(v) => setSheet({ ...sheet, form: { ...sheet.form, visit_time: v } })} />
+            </div>
             <label>
               메모 (선택)
               <input

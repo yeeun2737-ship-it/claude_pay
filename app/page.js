@@ -11,6 +11,7 @@ import Month from './month';
 import Workout from './workout';
 import Memo from './memo';
 import Icon from './icons';
+import { askConfirm } from './confirm';
 
 // 아래 책갈피 메뉴
 const PAGES = [
@@ -19,7 +20,7 @@ const PAGES = [
   { id: 'month', icon: 'month', label: '월간', color: '#cbdcc3' },
   { id: 'memo', icon: 'memo', label: '메모', color: '#ddd3e6' },
   { id: 'ledger', icon: 'ledger', label: '가계부', color: '#f4d9c3' },
-  { id: 'workout', icon: 'workout', label: '운동', color: '#f3deaa' },
+  { id: 'workout', icon: 'habit', label: '습관', color: '#f3deaa' },
   { id: 'trips', icon: 'trips', label: '여행', color: '#c6dcd6' },
 ];
 
@@ -473,7 +474,7 @@ export default function Home() {
   }
 
   async function remove() {
-    if (!window.confirm('이 지출을 삭제할까요?')) return;
+    if (!(await askConfirm('이 지출을 삭제할까요?'))) return;
     const { error } = await supabase.from('expenses').delete().eq('id', editingId);
     if (error) {
       setError('삭제하지 못했어요: ' + error.message);

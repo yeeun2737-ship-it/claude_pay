@@ -36,12 +36,12 @@ export function formatDate(str) {
 
 // 일정·할 일에 붙이는 파스텔 색 라벨
 export const LABEL_COLORS = [
-  { id: 'pink', hex: '#f0cfc9', name: '분홍' },
-  { id: 'blue', hex: '#cfdde3', name: '하늘' },
-  { id: 'green', hex: '#cbdcc3', name: '연두' },
-  { id: 'yellow', hex: '#f3deaa', name: '노랑' },
-  { id: 'purple', hex: '#ddd3e6', name: '보라' },
-  { id: 'sky', hex: '#c6dcd6', name: '민트' },
+  { id: 'pink', hex: '#efb9b1', name: '빨강', note: '기념일' },
+  { id: 'blue', hex: '#bcd0e0', name: '파랑', note: '건강' },
+  { id: 'green', hex: '#c2d9b8', name: '초록', note: '여행' },
+  { id: 'yellow', hex: '#f3deaa', name: '노랑', note: '돈' },
+  { id: 'purple', hex: '#d6c8e4', name: '보라', note: '개인' },
+  { id: 'sky', hex: '#b9dcd4', name: '민트', note: '회사' },
 ];
 
 export const labelHex = (id) => (LABEL_COLORS.find((c) => c.id === id) ?? LABEL_COLORS[0]).hex;
@@ -53,6 +53,7 @@ export const REPEATS = [
   { id: 'daily', label: '매일' },
   { id: 'weekly', label: '매주' },
   { id: 'monthly', label: '매월' },
+  { id: 'yearly', label: '매년' },
 ];
 
 export const repeatLabel = (id) => REPEATS.find((r) => r.id === id)?.label ?? '';
