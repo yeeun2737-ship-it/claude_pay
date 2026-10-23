@@ -5,6 +5,22 @@ import { supabase } from './supabase';
 import { CATEGORIES, CURRENCIES, currencyOf, formatDate, pad, toDateStr, won } from './shared';
 import ExpenseRow from './expense-row';
 import TripsView from './trips';
+import Today from './today';
+import Week from './week';
+import Month from './month';
+import Workout from './workout';
+import Memo from './memo';
+
+// 아래 책갈피 메뉴
+const PAGES = [
+  { id: 'today', emoji: '✅', label: '오늘', color: '#ffc9d6' },
+  { id: 'week', emoji: '📅', label: '주간', color: '#cfe2ff' },
+  { id: 'month', emoji: '🗓️', label: '월간', color: '#d3efcf' },
+  { id: 'workout', emoji: '🏃', label: '운동', color: '#fff0b8' },
+  { id: 'memo', emoji: '📝', label: '메모', color: '#e3d8ff' },
+  { id: 'ledger', emoji: '💰', label: '가계부', color: '#ffdcc7' },
+  { id: 'trips', emoji: '🧳', label: '여행', color: '#cfeaf4' },
+];
 
 // 그 날짜의 환율(1 외화 = ? 원). 주말·휴일은 서비스가 직전 영업일 값을 주고, 미래 날짜는 최신 환율을 쓴다.
 async function fetchRate(currency, date, signal) {
@@ -44,6 +60,7 @@ export default function Home() {
   const [trips, setTrips] = useState([]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
+  const [page, setPage] = useState('today');
   const [tab, setTab] = useState('list');
   const [session, setSession] = useState(undefined);
   const [authMode, setAuthMode] = useState('login');
@@ -230,6 +247,7 @@ export default function Home() {
     setOpen(false);
     setEditingId(null);
     setTab('list');
+    setPage('today');
   }
 
   if (session === undefined) return <main className="app" />;
@@ -469,34 +487,44 @@ export default function Home() {
 
   return (
     <main className="app">
-      <header className="hero">
-        <button className="lock-btn left" onClick={openPassword}>
+      <header className="topbar">
+        <button className="top-btn" onClick={openPassword}>
           🔑 비밀번호
         </button>
-        <button className="lock-btn" onClick={logout}>
+        <p className="brand">🌸 티끌모아 티끌</p>
+        <button className="top-btn" onClick={logout}>
           로그아웃
         </button>
-        <p className="brand">🐷 티끌모아 티끌</p>
-        <p className="label">{today.getMonth() + 1}월 지출 합계</p>
-        <p className="total">{won(monthTotal)}</p>
-        <span className="sticker">티끌도 모이면... 티끌! 🫠</span>
       </header>
 
       {error && <p className="error">{error}</p>}
 
-      <nav className="tabs">
-        <button className={tab === 'list' ? 'tab on' : 'tab'} onClick={() => setTab('list')}>
-          📒 내역
-        </button>
-        <button className={tab === 'stats' ? 'tab on' : 'tab'} onClick={() => setTab('stats')}>
-          📊 통계
-        </button>
-        <button className={tab === 'trips' ? 'tab on' : 'tab'} onClick={() => setTab('trips')}>
-          🧳 여행
-        </button>
-      </nav>
+      {page === 'today' && <Today setError={setError} />}
+      {page === 'week' && <Week setError={setError} />}
+      {page === 'month' && <Month setError={setError} />}
+      {page === 'workout' && <Workout setError={setError} />}
+      {page === 'memo' && <Memo setError={setError} />}
 
-      {tab === 'trips' && (
+      {page === 'ledger' && (
+        <>
+          <header className="hero">
+            <p className="label">{today.getMonth() + 1}월 지출 합계</p>
+            <p className="total">{won(monthTotal)}</p>
+            <span className="sticker">티끌도 모이면... 티끌! 🫠</span>
+          </header>
+
+          <nav className="tabs">
+            <button className={tab === 'list' ? 'tab on' : 'tab'} onClick={() => setTab('list')}>
+              📒 내역
+            </button>
+            <button className={tab === 'stats' ? 'tab on' : 'tab'} onClick={() => setTab('stats')}>
+              📊 통계
+            </button>
+          </nav>
+        </>
+      )}
+
+      {page === 'trips' && (
         <TripsView
           trips={trips}
           setTrips={setTrips}
@@ -507,7 +535,7 @@ export default function Home() {
         />
       )}
 
-      {tab === 'stats' && (
+      {page === 'ledger' && tab === 'stats' && (
         <section className="stats">
           <div className="numbers">
             <div>
@@ -543,12 +571,12 @@ export default function Home() {
                     />
                   ))}
                 </g>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#2b2250" strokeWidth="1.6" />
-                <circle cx="50" cy="50" r="27" fill="none" stroke="#2b2250" strokeWidth="1.6" />
-                <text x="50" y="48" textAnchor="middle" fontSize="6" fill="#2b2250">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#5b4a52" strokeWidth="1.6" />
+                <circle cx="50" cy="50" r="27" fill="none" stroke="#5b4a52" strokeWidth="1.6" />
+                <text x="50" y="48" textAnchor="middle" fontSize="6" fill="#5b4a52">
                   총 지출
                 </text>
-                <text x="50" y="58" textAnchor="middle" fontSize="8.5" fontWeight="900" fill="#2b2250">
+                <text x="50" y="58" textAnchor="middle" fontSize="8.5" fontWeight="900" fill="#5b4a52">
                   {monthTotal.toLocaleString('ko-KR')}
                 </text>
               </svg>
@@ -570,21 +598,21 @@ export default function Home() {
                           width={w * 0.7}
                           height={h}
                           rx="1.5"
-                          fill={v === maxDaily ? '#ffd23f' : '#ff8fb1'}
-                          stroke="#2b2250"
+                          fill={v === maxDaily ? '#ffe08a' : '#ffb3c6'}
+                          stroke="#5b4a52"
                           strokeWidth="1.2"
                         />
                       )}
                       {(i + 1 === 1 || (i + 1) % 5 === 0) && (
-                        <text x={5 + i * w + w / 2} y="121" textAnchor="middle" fontSize="8" fill="#2b2250">
+                        <text x={5 + i * w + w / 2} y="121" textAnchor="middle" fontSize="8" fill="#5b4a52">
                           {i + 1}
                         </text>
                       )}
                     </g>
                   );
                 })}
-                <line x1="5" y1="105" x2="305" y2="105" stroke="#2b2250" strokeWidth="1.5" />
-                <text x="5" y="10" fontSize="8" fontWeight="700" fill="#2b2250">
+                <line x1="5" y1="105" x2="305" y2="105" stroke="#5b4a52" strokeWidth="1.5" />
+                <text x="5" y="10" fontSize="8" fontWeight="700" fill="#5b4a52">
                   최대 {maxDaily.toLocaleString('ko-KR')}원
                 </text>
               </svg>
@@ -615,7 +643,7 @@ export default function Home() {
         </section>
       )}
 
-      <section className="list" hidden={tab !== 'list'}>
+      <section className="list" hidden={page !== 'ledger' || tab !== 'list'}>
         {groups.length === 0 && (
           <div className="empty">
             <p>🫥</p>
@@ -645,9 +673,28 @@ export default function Home() {
         ))}
       </section>
 
-      <button className="fab" onClick={openNew} aria-label="지출 추가">
-        +
-      </button>
+      {page === 'ledger' && (
+        <button className="fab" onClick={openNew} aria-label="지출 추가">
+          +
+        </button>
+      )}
+
+      <nav className="bookmarks" aria-label="메뉴">
+        {PAGES.map((p) => (
+          <button
+            key={p.id}
+            className={page === p.id ? 'bm on' : 'bm'}
+            style={{ '--c': p.color }}
+            onClick={() => {
+              setPage(p.id);
+              window.scrollTo(0, 0);
+            }}
+          >
+            <span>{p.emoji}</span>
+            <span>{p.label}</span>
+          </button>
+        ))}
+      </nav>
 
       {open && (
         <div className="overlay" onClick={() => setOpen(false)}>
@@ -670,7 +717,7 @@ export default function Home() {
                     type="button"
                     key={c.code}
                     className={form.currency === c.code ? 'cat on' : 'cat'}
-                    style={{ '--c': '#ffd23f' }}
+                    style={{ '--c': '#ffe08a' }}
                     onClick={() => setCurrency(c.code)}
                   >
                     {c.symbol} {c.label}

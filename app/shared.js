@@ -17,12 +17,12 @@ export const won = (n) => n.toLocaleString('ko-KR') + '원';
 export const perPerson = (amount, people) => Math.round(amount / people);
 
 export const CATEGORIES = [
-  { name: '식비', emoji: '🍙', color: '#ffd23f' },
-  { name: '카페', emoji: '☕', color: '#ff8fb1' },
-  { name: '교통', emoji: '🚌', color: '#7fd6ff' },
-  { name: '쇼핑', emoji: '🛍️', color: '#b9a3ff' },
-  { name: '구독', emoji: '📺', color: '#8fe3a3' },
-  { name: '기타', emoji: '✨', color: '#ffb36b' },
+  { name: '식비', emoji: '🍙', color: '#ffe08a' },
+  { name: '카페', emoji: '☕', color: '#ffb3c6' },
+  { name: '교통', emoji: '🚌', color: '#b5e3f7' },
+  { name: '쇼핑', emoji: '🛍️', color: '#d6c9ff' },
+  { name: '구독', emoji: '📺', color: '#bdeccb' },
+  { name: '기타', emoji: '✨', color: '#ffd0a8' },
 ];
 
 export const catOf = (name) => CATEGORIES.find((c) => c.name === name) ?? CATEGORIES[5];
@@ -33,3 +33,26 @@ export function formatDate(str) {
   const [y, m, d] = str.split('-').map(Number);
   return `${m}월 ${d}일 (${DAYS[new Date(y, m - 1, d).getDay()]})`;
 }
+
+// 일정·할 일에 붙이는 파스텔 색 라벨
+export const LABEL_COLORS = [
+  { id: 'pink', hex: '#ffc9d6', name: '분홍' },
+  { id: 'blue', hex: '#cfe2ff', name: '하늘' },
+  { id: 'green', hex: '#d3efcf', name: '연두' },
+  { id: 'yellow', hex: '#fff0b8', name: '노랑' },
+  { id: 'purple', hex: '#e3d8ff', name: '보라' },
+  { id: 'sky', hex: '#cfeaf4', name: '민트' },
+];
+
+export const labelHex = (id) => (LABEL_COLORS.find((c) => c.id === id) ?? LABEL_COLORS[0]).hex;
+
+export const DEFAULT_CATEGORIES = ['공부', '약속', '운동', '집안일', '기타'];
+
+export const REPEATS = [
+  { id: 'none', label: '반복 안 함' },
+  { id: 'daily', label: '매일' },
+  { id: 'weekly', label: '매주' },
+  { id: 'monthly', label: '매월' },
+];
+
+export const repeatLabel = (id) => REPEATS.find((r) => r.id === id)?.label ?? '';

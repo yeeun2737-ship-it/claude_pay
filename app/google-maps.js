@@ -1,7 +1,7 @@
 const KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 // 날짜별로 선과 핀 색을 돌려 쓴다
-export const DAY_COLORS = ['#ff8fb1', '#ffd23f', '#7fd6ff', '#b9a3ff', '#8fe3a3', '#ffb36b'];
+export const DAY_COLORS = ['#f28ba8', '#f5c542', '#6cc4e8', '#a58cf0', '#62d08a', '#f59a5c'];
 
 let loading;
 

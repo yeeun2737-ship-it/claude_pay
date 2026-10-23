@@ -6,8 +6,8 @@ export default function manifest() {
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',
-    background_color: '#fff8e7',
-    theme_color: '#ff8fb1',
+    background_color: '#fffaf2',
+    theme_color: '#ffc9d6',
     icons: [
       { src: '/pwa-icon/192', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: '/pwa-icon/512', sizes: '512x512', type: 'image/png', purpose: 'any' },

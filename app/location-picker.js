@@ -61,7 +61,7 @@ export default function LocationPicker({ query, value, onChange, onClear }) {
           marker.current = new AdvancedMarkerElement({
             map: map.current,
             position,
-            content: pinElement('📍', '#ff8fb1'),
+            content: pinElement('📍', '#f28ba8'),
             gmpDraggable: true,
           });
           marker.current.addListener('dragend', () => {
