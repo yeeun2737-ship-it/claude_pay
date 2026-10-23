@@ -506,3 +506,56 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .memo-foot small { margin-left: auto; font-size: 11px; color: var(--muted); }
 .grid-paper { background-image: linear-gradient(#e9dcc6 1px, transparent 1px), linear-gradient(90deg, #e9dcc6 1px, transparent 1px); background-size: 20px 20px; }
 .plan-empty.center { text-align: center; padding: 10px 0; }
+
+/* 메모 쓰기: 포스트잇 한 장 */
+.overlay.postit-overlay { align-items: center; padding: 18px; }
+.sheet.postit-sheet {
+  max-width: 340px;
+  border: none;
+  border-radius: 3px 3px 3px 26px / 3px 3px 3px 26px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.07), transparent 28px), var(--pit);
+  box-shadow: 3px 8px 18px rgba(60, 45, 20, 0.35);
+  padding: 26px 20px 20px;
+  gap: 8px;
+  transform: rotate(-1deg);
+}
+.note-label { display: block !important; font-weight: 400 !important; }
+.sheet input.note-title, .sheet input.note-tags, .sheet textarea.note-body {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-family: 'Nunito', 'Gaegu', 'Gowun Dodum', sans-serif;
+}
+.sheet input.note-title { font-size: 26px; font-weight: 700; line-height: 1.3; border-bottom: 2px dashed rgba(74, 64, 57, 0.3); padding-bottom: 4px; }
+.sheet input.note-tags { font-size: 15px; padding-top: 4px; padding-bottom: 0; color: rgba(74, 64, 57, 0.7); }
+.sheet textarea.note-body { font-size: 20px; line-height: 30px; min-height: 0; padding-top: 4px; padding-bottom: 0; }
+.sheet.postit-sheet input:focus, .sheet.postit-sheet textarea:focus { box-shadow: none; }
+.sheet.postit-sheet .actions button { background: rgba(255, 253, 245, 0.7); }
+.sheet.postit-sheet .actions .primary { background: rgba(74, 64, 57, 0.85); color: #fffaf0; }
+.today-head .week-nav h2 { font-size: clamp(16px, 5.6vw, 22px); white-space: nowrap; min-width: 0; }
+.today-head .week-nav button { flex: none; width: 32px; height: 32px; font-size: 13px; }
+
+/* 메모 목록: 포스트잇 */
+.memo-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 14px; padding: 6px 4px 0; }
+.memo-list li:nth-child(odd) .memo-card { transform: rotate(-1.5deg); }
+.memo-list li:nth-child(even) .memo-card { transform: rotate(1.2deg); }
+.memo-card {
+  aspect-ratio: 1 / 1;
+  align-content: start;
+  gap: 4px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.06), transparent 22px), var(--pit);
+  background-size: auto;
+  border: none;
+  border-radius: 2px 2px 2px 22px;
+  padding: 16px 12px 10px;
+  box-shadow: 2px 5px 10px rgba(60, 45, 20, 0.28);
+}
+.memo-card::before { content: none; }
+.memo-card strong { font-size: 19px; }
+.memo-card p { font-size: 13px; line-height: 1.4; -webkit-line-clamp: 4; color: rgba(74, 64, 57, 0.85); }
+.memo-foot { margin-top: auto; }
+.memo-foot i { background: rgba(255, 255, 255, 0.55); }

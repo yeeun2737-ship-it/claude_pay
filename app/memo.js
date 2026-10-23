@@ -5,7 +5,9 @@ import { supabase } from './supabase';
 import { monthDay } from './dates';
 import Icon from './icons';
 
-const TAPES = ['#f0cfc9', '#cfdde3', '#cbdcc3', '#f3deaa', '#ddd3e6', '#f4d9c3'];
+// 포스트잇 색(메모 번호로 정해서 DB에 따로 저장하지 않는다)
+const PAPERS = ['#fbeea8', '#f6d2cb', '#d3e4cb', '#cfe0e8', '#e3d9ec', '#f8dfc4'];
+const paperOf = (note) => PAPERS[note ? note.id % PAPERS.length : 0];
 
 // '#맛집, 공부 여행' → ['맛집', '공부', '여행'] (중복 제거, 최대 10개, 20자까지)
 const parseTags = (text) => [
@@ -45,20 +47,17 @@ function MemoSheet({ note, allTags, onClose, onSaved, onDeleted, setError }) {
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={save}>
+    <div className="overlay postit-overlay" onClick={onClose}>
+      <form className="sheet postit-sheet" style={{ '--pit': paperOf(note) }} onClick={(e) => e.stopPropagation()} onSubmit={save}>
         <h2>{note ? <><Icon name="pencil" /> 메모 고치기</> : <><Icon name="memo" /> 새 메모</>}</h2>
-        <label>
-          제목
-          <input type="text" required autoFocus maxLength={60} placeholder="예: 가고 싶은 맛집" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
+        <label className="note-label">
+          <input className="note-title" type="text" required autoFocus maxLength={60} placeholder="제목" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
         </label>
-        <label>
-          내용
-          <textarea className="grid-paper" rows={7} placeholder="자유롭게 적어요" value={form.body} onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))} />
+        <label className="note-label">
+          <textarea className="note-body" rows={9} placeholder="여기에 자유롭게 적어요" value={form.body} onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))} />
         </label>
-        <label>
-          태그 (쉼표나 띄어쓰기로 구분)
-          <input type="text" placeholder="예: 맛집, 여행" value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} />
+        <label className="note-label">
+          <input className="note-tags" type="text" placeholder="# 태그 (쉼표나 띄어쓰기로 구분)" value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} />
         </label>
         {allTags.filter((t) => !current.includes(t)).length > 0 && (
           <div className="kinds">
@@ -154,7 +153,7 @@ export default function Memo({ setError }) {
       <ul className="memo-list">
         {shown.map((n) => (
           <li key={n.id}>
-            <button type="button" className="memo-card" style={{ '--tape': TAPES[n.id % TAPES.length] }} onClick={() => setSheet({ item: n })}>
+            <button type="button" className="memo-card" style={{ '--pit': paperOf(n) }} onClick={() => setSheet({ item: n })}>
               <strong>{n.title}</strong>
               {n.body && <p>{n.body}</p>}
               <span className="memo-foot">
