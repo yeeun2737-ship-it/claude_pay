@@ -17,9 +17,9 @@ const PAGES = [
   { id: 'today', icon: 'today', label: '오늘', color: '#f0cfc9' },
   { id: 'week', icon: 'week', label: '주간', color: '#cfdde3' },
   { id: 'month', icon: 'month', label: '월간', color: '#cbdcc3' },
-  { id: 'workout', icon: 'workout', label: '운동', color: '#f3deaa' },
   { id: 'memo', icon: 'memo', label: '메모', color: '#ddd3e6' },
   { id: 'ledger', icon: 'ledger', label: '가계부', color: '#f4d9c3' },
+  { id: 'workout', icon: 'workout', label: '운동', color: '#f3deaa' },
   { id: 'trips', icon: 'trips', label: '여행', color: '#c6dcd6' },
 ];
 
@@ -258,7 +258,7 @@ export default function Home() {
     return (
       <main className="app lock">
         <form className="hero" onSubmit={authenticate}>
-          <p className="brand">소소노트</p>
+          <p className="brand"><Icon name="diary" size={30} /> 소소노트</p>
           <p className="label">{login ? '로그인하고 내 다이어리를 열어요' : '이메일로 내 다이어리를 만들어요'}</p>
           <input
             className="auth-in"
@@ -492,7 +492,7 @@ export default function Home() {
         <button className="top-btn" onClick={openPassword}>
           <Icon name="key" size={14} /> 비밀번호
         </button>
-        <p className="brand"><Icon name="flower" size={22} /> 소소노트</p>
+        <p className="brand"><Icon name="diary" size={24} /> 소소노트</p>
         <button className="top-btn" onClick={logout}>
           로그아웃
         </button>

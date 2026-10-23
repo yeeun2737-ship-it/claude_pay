@@ -46,7 +46,8 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .46 0 0 0 0 .36 0 0 0 .2 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Gaegu', 'Gowun Dodum', sans-serif; }
+h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'Gaegu', 'Gowun Dodum', sans-serif; }
+/* Nunito는 숫자·기호만 불러와서, 손글씨 제목 안의 숫자만 깔끔하게 보인다 */
 
 .app { width: 100%; max-width: 430px; min-height: 100dvh; padding: 14px 14px 150px; }
 

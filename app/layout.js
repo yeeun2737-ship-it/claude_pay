@@ -24,6 +24,10 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap"
         />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@700&display=swap&text=0123456789,.:/%25~%2B-"
+        />
       </head>
       <body>
         {children}
