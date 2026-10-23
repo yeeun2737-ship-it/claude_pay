@@ -49,7 +49,9 @@ body::before {
 h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'Gaegu', 'Gowun Dodum', sans-serif; }
 /* Nunito는 숫자·기호만 불러와서, 손글씨 제목 안의 숫자만 깔끔하게 보인다 */
 
-.app { width: 100%; max-width: 430px; min-height: 100dvh; padding: 14px 14px 150px; }
+/* 화면 전체는 스크롤하지 않고 .app 안에서만 스크롤해서, 아래 메뉴가 움직이지 않게 한다 */
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+.app { width: 100%; max-width: 430px; height: 100dvh; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 14px 14px 150px; }
 
 /* 제목: 형광펜으로 칠한 듯한 색 띠 */
 :is(.card h2, .card h3, .chart-card h3, .plan h3, .trip-map h3, .trip-spent h3, .sheet h2, .trip-top h2, .week-nav h2) {

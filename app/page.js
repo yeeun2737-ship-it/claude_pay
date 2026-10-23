@@ -689,7 +689,7 @@ export default function Home() {
             style={{ '--c': p.color }}
             onClick={() => {
               setPage(p.id);
-              window.scrollTo(0, 0);
+              document.querySelector('.app')?.scrollTo(0, 0);
             }}
           >
             <span><Icon name={p.icon} size={21} /></span>
