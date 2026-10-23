@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
-import { addDays, dayTitle, occursOn, todayStr } from './dates';
+import { addDays, dayTitle, isHoliday, occursOn, todayStr, weekday } from './dates';
 import TaskRow from './task-row';
 import TaskSheet from './task-sheet';
 import Icon from './icons';
@@ -84,7 +84,9 @@ export default function Today({ setError }) {
   return (
     <section className="today">
       <div className="card today-head">
-        <h2>오늘 · {dayTitle(today)}</h2>
+        <h2>
+          오늘 · <span className={isHoliday(today) || weekday(today) === 0 ? 'red' : weekday(today) === 6 ? 'sat' : undefined}>{dayTitle(today)}</span>
+        </h2>
         <div className="progress" aria-label="오늘 진행률">
           <div style={{ width: todays.length ? `${(doneCount / todays.length) * 100}%` : '0%' }} />
         </div>

@@ -418,8 +418,8 @@ h1, h2, h3, .brand, .total, .wd b, .memo-card strong { font-family: 'Nunito', 'G
 .month-head { --hl: var(--sage); background: color-mix(in srgb, var(--sage) 40%, var(--paper-2)); justify-items: center; text-align: center; }
 .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; border: 1.3px solid var(--edge); border-radius: var(--hand); overflow: hidden; background: rgba(255, 252, 244, 0.7); }
 .cal-dow { text-align: center; font-size: 12px; color: var(--muted); padding: 4px 0; border-bottom: 1.2px solid var(--line); background: color-mix(in srgb, var(--rose) 35%, var(--paper-2)); }
-.cal-dow.red, .cal-num.red, .wd.red b, .wd.red span { color: #c0594f; }
-.cal-dow.sat, .cal-num.sat, .wd.sat b, .wd.sat span { color: #5f84ad; }
+.today-head h2 .red, .cal-dow.red, .cal-num.red, .wd.red b, .wd.red span { color: #c0594f; }
+.today-head h2 .sat, .cal-dow.sat, .cal-num.sat, .wd.sat b, .wd.sat span { color: #5f84ad; }
 .cal-cell { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 2px; min-height: 74px; padding: 3px 2px; font: inherit; text-align: left; color: var(--ink); background: transparent; border: none; border-right: 1px dotted var(--line); border-bottom: 1px dotted var(--line); cursor: pointer; overflow: hidden; }
 .cal-cell:nth-child(7n) { border-right: none; }
 .cal-cell.dim { opacity: 0.4; }
