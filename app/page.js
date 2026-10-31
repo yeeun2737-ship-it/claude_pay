@@ -130,13 +130,11 @@ export default function Home() {
         if (error) setError('불러오지 못했어요: ' + error.message);
         else setExpenses(data);
       });
-    supabase
-      .from('trips')
-      .select('*')
-      .then(({ data, error }) => {
-        if (error) setError('여행을 불러오지 못했어요: ' + error.message);
-        else setTrips(data);
-      });
+    // 여행 모드는 사람마다 따로라서(같이 쓰는 여행이 있어서) trip_mode 표에서 내 것을 읽어 합친다
+    Promise.all([supabase.from('trips').select('*'), supabase.from('trip_mode').select('trip_id').maybeSingle()]).then(([t, m]) => {
+      if (t.error) setError('여행을 불러오지 못했어요: ' + t.error.message);
+      else setTrips(t.data.map((x) => ({ ...x, is_active: x.id === m.data?.trip_id })));
+    });
   }, [userId]);
 
   async function authenticate(e) {
@@ -533,6 +531,7 @@ export default function Home() {
           expenses={expenses}
           setExpenses={setExpenses}
           setError={setError}
+          userId={userId}
           onEditExpense={openEdit}
         />
       )}
