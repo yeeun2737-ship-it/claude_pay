@@ -64,6 +64,7 @@ export default function Home() {
   const [error, setError] = useState('');
   const [page, setPage] = useState('today');
   const [tab, setTab] = useState('list');
+  const [ledgerYm, setLedgerYm] = useState(null); // 보고 있는 달({ y, m }), 없으면 이번 달
   const [session, setSession] = useState(undefined);
   const [authMode, setAuthMode] = useState('login');
   const [email, setEmail] = useState('');
@@ -305,7 +306,13 @@ export default function Home() {
   }
 
   const today = new Date();
-  const monthKey = `${today.getFullYear()}-${pad(today.getMonth() + 1)}`;
+  const ym = ledgerYm ?? { y: today.getFullYear(), m: today.getMonth() + 1 };
+  const isThisMonth = ym.y === today.getFullYear() && ym.m === today.getMonth() + 1;
+  const monthKey = `${ym.y}-${pad(ym.m)}`;
+  const moveMonth = (delta) => {
+    const d = new Date(Date.UTC(ym.y, ym.m - 1 + delta, 1));
+    setLedgerYm({ y: d.getUTCFullYear(), m: d.getUTCMonth() + 1 });
+  };
   const monthTotal = expenses
     .filter((e) => e.date.startsWith(monthKey))
     .reduce((sum, e) => sum + e.amount, 0);
@@ -317,9 +324,9 @@ export default function Home() {
   })
     .filter((c) => c.count > 0)
     .sort((a, b) => b.sum - a.sum);
-  const dailyAvg = Math.round(monthTotal / today.getDate());
-
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const daysInMonth = new Date(ym.y, ym.m, 0).getDate();
+  // 이번 달은 오늘까지의 날수로, 지난 달은 그 달 전체 날수로 나눈다
+  const dailyAvg = Math.round(monthTotal / (isThisMonth ? today.getDate() : daysInMonth));
   const dailyTotals = Array.from({ length: daysInMonth }, (_, i) =>
     monthExpenses
       .filter((e) => Number(e.date.slice(8, 10)) === i + 1)
@@ -339,7 +346,7 @@ export default function Home() {
   });
 
   const groups = Object.entries(
-    expenses.reduce((acc, e) => {
+    monthExpenses.reduce((acc, e) => {
       (acc[e.date] ??= []).push(e);
       return acc;
     }, {}),
@@ -508,7 +515,21 @@ export default function Home() {
       {page === 'ledger' && (
         <>
           <header className="hero">
-            <p className="label">{today.getMonth() + 1}월 지출 합계</p>
+            <div className="ledger-nav">
+              <button type="button" onClick={() => moveMonth(-1)} aria-label="지난달">
+                ◀
+              </button>
+              <span>{ym.y}년 {ym.m}월</span>
+              <button type="button" onClick={() => moveMonth(1)} aria-label="다음달">
+                ▶
+              </button>
+            </div>
+            {!isThisMonth && (
+              <button type="button" className="mini" onClick={() => setLedgerYm(null)}>
+                이번 달로
+              </button>
+            )}
+            <p className="label">{ym.m}월 지출 합계</p>
             <p className="total">{won(monthTotal)}</p>
             <span className="sticker">티끌도 모이면... 티끌! 🫠</span>
           </header>
@@ -648,8 +669,8 @@ export default function Home() {
         {groups.length === 0 && (
           <div className="empty">
             <p><Icon name="book" size={44} /></p>
-            <p>아직 쓴 돈이 없어요!</p>
-            <p className="sub">아래 + 버튼으로 첫 지출을 적어봐요</p>
+            <p>{isThisMonth ? '아직 쓴 돈이 없어요!' : `${ym.m}월에는 쓴 돈이 없어요`}</p>
+            <p className="sub">{isThisMonth ? '아래 + 버튼으로 첫 지출을 적어봐요' : '달 이동 화살표로 다른 달을 볼 수 있어요'}</p>
           </div>
         )}
         {groups.length > 0 && <p className="hint">항목을 누르면 고치거나 지울 수 있어요</p>}
