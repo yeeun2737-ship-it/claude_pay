@@ -22,7 +22,7 @@ export const CATEGORIES = [
   { name: '교통', icon: 'bus', color: '#cfdde3' },
   { name: '쇼핑', icon: 'bag', color: '#ddd3e6' },
   // 저장 이름은 예전 그대로 '구독'이고 화면에는 label로 보인다(구독·관리비·대출이자 같은 고정 지출을 묶음)
-  { name: '구독', label: '고정지출', hint: '구독·관리비·대출이자', icon: 'home', color: '#cbdcc3' },
+  { name: '구독', label: '고정지출', icon: 'home', color: '#cbdcc3' },
   { name: '기타', icon: 'sparkle', color: '#f4d9c3' },
 ];
 

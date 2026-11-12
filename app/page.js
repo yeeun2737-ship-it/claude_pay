@@ -816,7 +816,6 @@ export default function Home() {
                     onClick={() => setForm({ ...form, category: c.name })}
                   >
                     <Icon name={c.icon} size={14} /> {c.label ?? c.name}
-                    {c.hint && <small className="cat-hint">{c.hint}</small>}
                   </button>
                 ))}
               </div>
