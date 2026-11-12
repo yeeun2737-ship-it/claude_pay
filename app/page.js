@@ -646,7 +646,7 @@ export default function Home() {
                 <li key={c.name}>
                   <div className="bar-head">
                     <span>
-                      <Icon name={c.icon} size={14} /> {c.name} <small>{c.count}건</small>
+                      <Icon name={c.icon} size={14} /> {c.label ?? c.name} <small>{c.count}건</small>
                     </span>
                     <span>
                       {won(c.sum)} · {Math.round((c.sum / monthTotal) * 100)}%
@@ -815,7 +815,8 @@ export default function Home() {
                     style={{ '--c': c.color }}
                     onClick={() => setForm({ ...form, category: c.name })}
                   >
-                    <Icon name={c.icon} size={14} /> {c.name}
+                    <Icon name={c.icon} size={14} /> {c.label ?? c.name}
+                    {c.hint && <small className="cat-hint">{c.hint}</small>}
                   </button>
                 ))}
               </div>

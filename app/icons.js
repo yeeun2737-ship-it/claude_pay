@@ -181,6 +181,12 @@ const PATHS = {
       <path d="M8.5 20h7" />
     </>
   ),
+  home: (
+    <>
+      <path d="M4.5 11 12 4.8 19.5 11" />
+      <path d="M6.5 10v9h11v-9M10 19v-4.5h4V19" />
+    </>
+  ),
   check: <path d="m6.5 12.5 3.8 3.8 7.2-8" />,
   close: <path d="M7 7l10 10M17 7 7 17" />,
 };

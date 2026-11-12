@@ -8,7 +8,7 @@ export default function ExpenseRow({ expense: e, tripLabel, people, onOpen }) {
   return (
     <li className="row" onClick={() => onOpen(e)}>
       <span className="chip" style={{ '--c': c.color }}>
-        <Icon name={c.icon} size={14} /> {c.name}
+        <Icon name={c.icon} size={14} /> {c.label ?? c.name}
       </span>
       <div className="info">
         <strong>{e.place}</strong>
